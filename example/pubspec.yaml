@@ -1,0 +1,15 @@
+name: nav_toggle_example
+description: Demo app for nav_toggle package.
+
+environment:
+  sdk: ^3.0.0
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  nav_toggle:
+    path: ..
+
+flutter:
+  uses-material-design: true
