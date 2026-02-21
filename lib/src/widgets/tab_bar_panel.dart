@@ -86,7 +86,7 @@ class _TabItemState extends State<_TabItem> {
       bg = theme.accent.withValues(alpha: 0.1);
       textColor = theme.accent;
     } else if (_hovering) {
-      bg = const Color(0xFF1E2030);
+      bg = theme.hoverSurface;
       textColor = theme.text;
     } else {
       bg = const Color(0x00000000);

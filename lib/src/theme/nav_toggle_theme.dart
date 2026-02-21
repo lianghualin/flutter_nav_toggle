@@ -6,14 +6,15 @@ class NavToggleTheme {
     this.buttonHeight = 52.0,
     this.buttonWidth = 200.0,
     this.sidebarWidth = 200.0,
-    this.background = const Color(0xFF0D0E11),
-    this.surface = const Color(0xFF161820),
-    this.border = const Color(0x12FFFFFF),
-    this.accent = const Color(0xFF7DF3C0),
-    this.accent2 = const Color(0xFF5BC8F5),
-    this.text = const Color(0xFFC8CDD8),
-    this.textDim = const Color(0xFF5A6070),
-    this.cornerRadius = 14.0,
+    this.background = const Color(0xFFF5F5F7),
+    this.surface = const Color(0xFFFFFFFF),
+    this.border = const Color(0x1A000000),
+    this.accent = const Color(0xFF10B981),
+    this.accent2 = const Color(0xFF3B82F6),
+    this.text = const Color(0xFF1F2937),
+    this.textDim = const Color(0xFF9CA3AF),
+    this.hoverSurface = const Color(0xFFF0F0F2),
+    this.cornerRadius = 0.0,
     this.itemRadius = 8.0,
     this.collapseDuration = const Duration(milliseconds: 420),
     this.expandDuration = const Duration(milliseconds: 550),
@@ -34,6 +35,7 @@ class NavToggleTheme {
   final Color accent2;
   final Color text;
   final Color textDim;
+  final Color hoverSurface;
   final double cornerRadius;
   final double itemRadius;
   final Duration collapseDuration;
@@ -69,6 +71,7 @@ class NavToggleTheme {
     Color? accent2,
     Color? text,
     Color? textDim,
+    Color? hoverSurface,
     double? cornerRadius,
     double? itemRadius,
     Duration? collapseDuration,
@@ -90,6 +93,7 @@ class NavToggleTheme {
       accent2: accent2 ?? this.accent2,
       text: text ?? this.text,
       textDim: textDim ?? this.textDim,
+      hoverSurface: hoverSurface ?? this.hoverSurface,
       cornerRadius: cornerRadius ?? this.cornerRadius,
       itemRadius: itemRadius ?? this.itemRadius,
       collapseDuration: collapseDuration ?? this.collapseDuration,

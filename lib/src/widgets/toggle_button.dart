@@ -31,12 +31,7 @@ class _ToggleButtonState extends State<ToggleButton> {
   Widget build(BuildContext context) {
     final theme = NavToggleTheme.of(context);
     final hoverBg = _hovering && widget.enabled
-        ? HSLColor.fromColor(theme.surface)
-            .withLightness(
-              (HSLColor.fromColor(theme.surface).lightness + 0.05)
-                  .clamp(0.0, 1.0),
-            )
-            .toColor()
+        ? theme.hoverSurface
         : theme.surface;
 
     return MouseRegion(
@@ -57,9 +52,6 @@ class _ToggleButtonState extends State<ToggleButton> {
             height: theme.buttonHeight,
             decoration: BoxDecoration(
               color: hoverBg,
-              borderRadius: BorderRadius.only(
-                bottomRight: Radius.circular(theme.cornerRadius),
-              ),
               border: Border(
                 bottom: BorderSide(color: theme.border, width: 1),
                 right: BorderSide(color: theme.border, width: 1),

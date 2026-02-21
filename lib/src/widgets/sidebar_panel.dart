@@ -97,7 +97,7 @@ class _SidebarItemState extends State<_SidebarItem> {
       textColor = theme.accent;
       iconColor = theme.accent;
     } else if (_hovering) {
-      bg = const Color(0xFF1E2030);
+      bg = theme.hoverSurface;
       textColor = theme.text;
       iconColor = theme.text;
     } else {

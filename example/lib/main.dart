@@ -11,8 +11,8 @@ class NavToggleExampleApp extends StatelessWidget {
     return MaterialApp(
       title: 'NavToggle Demo',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(useMaterial3: true).copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0D0E11),
+      theme: ThemeData.light(useMaterial3: true).copyWith(
+        scaffoldBackgroundColor: const Color(0xFFF5F5F7),
       ),
       home: const NavToggleDemo(),
     );
@@ -39,11 +39,11 @@ class _NavToggleDemoState extends State<NavToggleDemo> {
   ];
 
   static const _pageColors = {
-    'home': Color(0xFF7DF3C0),
-    'explore': Color(0xFF5BC8F5),
-    'library': Color(0xFFF5A55B),
-    'favorites': Color(0xFFF57B7B),
-    'settings': Color(0xFFB57BF5),
+    'home': Color(0xFF10B981),
+    'explore': Color(0xFF3B82F6),
+    'library': Color(0xFFF59E0B),
+    'favorites': Color(0xFFEF4444),
+    'settings': Color(0xFF8B5CF6),
   };
 
   @override
@@ -82,7 +82,7 @@ class _NavToggleDemoState extends State<NavToggleDemo> {
                 style: TextStyle(
                   fontFamily: 'DMMono',
                   fontSize: 14,
-                  color: const Color(0xFF5A6070),
+                  color: const Color(0xFF9CA3AF),
                 ),
               ),
             ],
