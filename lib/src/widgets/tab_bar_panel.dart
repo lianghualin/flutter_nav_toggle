@@ -113,6 +113,15 @@ class _TabBarPanelState extends State<TabBarPanel> {
     return item.children!.any((c) => c.id == widget.selectedId);
   }
 
+  /// Returns the selected child's label if one is active, otherwise the item's own label.
+  String _displayLabelFor(NavItem item) {
+    if (!item.hasChildren) return item.label;
+    for (final child in item.children!) {
+      if (child.id == widget.selectedId) return child.label;
+    }
+    return item.label;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = NavToggleTheme.of(context);
@@ -136,6 +145,7 @@ class _TabBarPanelState extends State<TabBarPanel> {
               ),
             _TabItem(
               item: widget.items[i],
+              displayLabel: _displayLabelFor(widget.items[i]),
               isSelected: widget.items[i].id == widget.selectedId ||
                   _parentContainsSelected(widget.items[i]),
               isDropdownOpen: _openDropdownId == widget.items[i].id,
@@ -205,6 +215,7 @@ class _DropdownOverlay extends StatelessWidget {
 class _TabItem extends StatefulWidget {
   const _TabItem({
     required this.item,
+    required this.displayLabel,
     required this.isSelected,
     required this.isDropdownOpen,
     required this.onTap,
@@ -213,6 +224,7 @@ class _TabItem extends StatefulWidget {
   });
 
   final NavItem item;
+  final String displayLabel;
   final bool isSelected;
   final bool isDropdownOpen;
   final VoidCallback onTap;
@@ -263,7 +275,7 @@ class _TabItemState extends State<_TabItem> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  widget.item.label.toUpperCase(),
+                  widget.displayLabel.toUpperCase(),
                   style: TextStyle(
                     fontFamily: theme.navFontFamily,
                     fontWeight: FontWeight.w700,
