@@ -1,4 +1,4 @@
-name: nav_toggle
+name: flutter_nav_toggle
 description: >
   A dual-mode navigation toggle widget that smoothly morphs between
   sidebar and tab bar layouts with clip-path animations.
