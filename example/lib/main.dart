@@ -31,7 +31,15 @@ class NavToggleDemo extends StatefulWidget {
 
 class _NavToggleDemoState extends State<NavToggleDemo> {
   String _selectedId = 'home';
+  int _themeIndex = 0;
   final _random = Random();
+
+  static const _themes = [
+    ('Light', NavToggleTheme()),
+    ('Dark', NavToggleTheme.dark()),
+    ('Ocean', NavToggleTheme.ocean()),
+    ('Sunset', NavToggleTheme.sunset()),
+  ];
   late Timer _statusTimer;
   SystemStatus _status = const SystemStatus(
     cpu: 0.42,
@@ -117,9 +125,12 @@ class _NavToggleDemoState extends State<NavToggleDemo> {
   Widget build(BuildContext context) {
     final color = _pageColors[_selectedId] ?? const Color(0xFF7DF3C0);
     final item = _findItem(_selectedId);
+    final (themeName, theme) = _themes[_themeIndex];
 
     return Scaffold(
+      backgroundColor: theme.background,
       body: NavToggleScaffold(
+        theme: theme,
         items: _items,
         initialSelectedId: 'home',
         systemStatus: _status,
@@ -146,7 +157,35 @@ class _NavToggleDemoState extends State<NavToggleDemo> {
                 style: TextStyle(
                   fontFamily: 'DMMono',
                   fontSize: 14,
-                  color: const Color(0xFF9CA3AF),
+                  color: theme.textDim,
+                ),
+              ),
+              const SizedBox(height: 24),
+              GestureDetector(
+                onTap: () => setState(() {
+                  _themeIndex = (_themeIndex + 1) % _themes.length;
+                }),
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.accent.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Theme: $themeName',
+                      style: TextStyle(
+                        fontFamily: 'DMMono',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: theme.accent,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],

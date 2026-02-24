@@ -25,6 +25,78 @@ class NavToggleTheme {
     this.monoFontFamily = 'DMMono',
   });
 
+  /// Dark theme with deep navy background and emerald accent.
+  const NavToggleTheme.dark({
+    this.buttonHeight = 52.0,
+    this.buttonWidth = 200.0,
+    this.sidebarWidth = 200.0,
+    this.background = const Color(0xFF111827),
+    this.surface = const Color(0xFF1F2937),
+    this.border = const Color(0x1AFFFFFF),
+    this.accent = const Color(0xFF10B981),
+    this.accent2 = const Color(0xFF3B82F6),
+    this.text = const Color(0xFFF9FAFB),
+    this.textDim = const Color(0xFF6B7280),
+    this.hoverSurface = const Color(0xFF374151),
+    this.cornerRadius = 0.0,
+    this.itemRadius = 8.0,
+    this.collapseDuration = const Duration(milliseconds: 420),
+    this.expandDuration = const Duration(milliseconds: 550),
+    this.iconMorphDuration = const Duration(milliseconds: 450),
+    this.contentShiftDuration = const Duration(milliseconds: 480),
+    this.easeCurve = const Cubic(0.77, 0, 0.18, 1),
+    this.navFontFamily = 'Syne',
+    this.monoFontFamily = 'DMMono',
+  });
+
+  /// Ocean theme with deep blue-slate tones and cyan accent.
+  const NavToggleTheme.ocean({
+    this.buttonHeight = 52.0,
+    this.buttonWidth = 200.0,
+    this.sidebarWidth = 200.0,
+    this.background = const Color(0xFF0F172A),
+    this.surface = const Color(0xFF1E293B),
+    this.border = const Color(0x14FFFFFF),
+    this.accent = const Color(0xFF06B6D4),
+    this.accent2 = const Color(0xFF3B82F6),
+    this.text = const Color(0xFFE2E8F0),
+    this.textDim = const Color(0xFF64748B),
+    this.hoverSurface = const Color(0xFF334155),
+    this.cornerRadius = 0.0,
+    this.itemRadius = 8.0,
+    this.collapseDuration = const Duration(milliseconds: 420),
+    this.expandDuration = const Duration(milliseconds: 550),
+    this.iconMorphDuration = const Duration(milliseconds: 450),
+    this.contentShiftDuration = const Duration(milliseconds: 480),
+    this.easeCurve = const Cubic(0.77, 0, 0.18, 1),
+    this.navFontFamily = 'Syne',
+    this.monoFontFamily = 'DMMono',
+  });
+
+  /// Sunset theme with warm stone tones and orange accent.
+  const NavToggleTheme.sunset({
+    this.buttonHeight = 52.0,
+    this.buttonWidth = 200.0,
+    this.sidebarWidth = 200.0,
+    this.background = const Color(0xFF1C1917),
+    this.surface = const Color(0xFF292524),
+    this.border = const Color(0x14FFFFFF),
+    this.accent = const Color(0xFFF97316),
+    this.accent2 = const Color(0xFFEF4444),
+    this.text = const Color(0xFFFAFAF9),
+    this.textDim = const Color(0xFF78716C),
+    this.hoverSurface = const Color(0xFF44403C),
+    this.cornerRadius = 0.0,
+    this.itemRadius = 8.0,
+    this.collapseDuration = const Duration(milliseconds: 420),
+    this.expandDuration = const Duration(milliseconds: 550),
+    this.iconMorphDuration = const Duration(milliseconds: 450),
+    this.contentShiftDuration = const Duration(milliseconds: 480),
+    this.easeCurve = const Cubic(0.77, 0, 0.18, 1),
+    this.navFontFamily = 'Syne',
+    this.monoFontFamily = 'DMMono',
+  });
+
   final double buttonHeight;
   final double buttonWidth;
   final double sidebarWidth;
