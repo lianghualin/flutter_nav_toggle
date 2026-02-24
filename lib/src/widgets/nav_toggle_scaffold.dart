@@ -113,6 +113,26 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
   }
 
   @override
+  void didUpdateWidget(NavToggleScaffold oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldTheme = oldWidget.theme ?? const NavToggleTheme();
+    final newTheme = _theme;
+    if (oldTheme.totalDuration != newTheme.totalDuration ||
+        oldTheme.collapseEnd != newTheme.collapseEnd ||
+        oldTheme.iconMorphEnd != newTheme.iconMorphEnd ||
+        oldTheme.easeCurve != newTheme.easeCurve) {
+      _animController.duration = newTheme.totalDuration;
+      _animations.dispose();
+      _animations = NavTransitionAnimations(
+        controller: _animController,
+        collapseEnd: newTheme.collapseEnd,
+        iconMorphEnd: newTheme.iconMorphEnd,
+        curve: newTheme.easeCurve,
+      );
+    }
+  }
+
+  @override
   void dispose() {
     _animController.removeListener(_checkCollapseComplete);
     _animController.removeStatusListener(_onAnimationStatus);
@@ -181,6 +201,7 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
     final targetTop = mode == NavMode.tabBar ? theme.buttonHeight : 0.0;
 
     return Stack(
+      fit: StackFit.expand,
       children: [
         // Content area with animated padding
         AnimatedPadding(

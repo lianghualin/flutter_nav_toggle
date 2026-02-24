@@ -51,9 +51,13 @@ class _TabBarPanelState extends State<TabBarPanel> {
   void didUpdateWidget(TabBarPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
     _ensureLayerLinks();
-    // Rebuild overlay if selection changed while dropdown is open
+    // Rebuild overlay after the current frame to avoid markNeedsBuild
+    // during the build phase (the OverlayEntry lives outside our ancestor
+    // chain, so it cannot be marked dirty mid-build).
     if (_overlayEntry != null) {
-      _overlayEntry!.markNeedsBuild();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _overlayEntry?.markNeedsBuild();
+      });
     }
   }
 
