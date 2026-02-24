@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import '../models/nav_item.dart';
+import '../models/system_status.dart';
 import '../theme/nav_toggle_theme.dart';
 
 /// The horizontal tab bar panel — extends from button's right edge to screen right.
@@ -13,13 +14,13 @@ class TabBarPanel extends StatefulWidget {
     required this.items,
     required this.selectedId,
     required this.onItemSelected,
-    this.onAddPressed,
+    this.systemStatus,
   });
 
   final List<NavItem> items;
   final String selectedId;
   final ValueChanged<String> onItemSelected;
-  final VoidCallback? onAddPressed;
+  final SystemStatus? systemStatus;
 
   @override
   State<TabBarPanel> createState() => _TabBarPanelState();
@@ -155,8 +156,8 @@ class _TabBarPanelState extends State<TabBarPanel> {
             ),
           ],
           const Spacer(),
-          if (widget.onAddPressed != null)
-            _AddButton(onTap: widget.onAddPressed!, theme: theme),
+          if (widget.systemStatus != null)
+            _StatusChips(status: widget.systemStatus!, theme: theme),
           const SizedBox(width: 8),
         ],
       ),
@@ -434,48 +435,124 @@ class _DropdownItemState extends State<_DropdownItem> {
   }
 }
 
-class _AddButton extends StatefulWidget {
-  const _AddButton({required this.onTap, required this.theme});
+class _StatusChips extends StatelessWidget {
+  const _StatusChips({required this.status, required this.theme});
 
-  final VoidCallback onTap;
+  final SystemStatus status;
   final NavToggleTheme theme;
 
-  @override
-  State<_AddButton> createState() => _AddButtonState();
-}
+  static const _green = Color(0xFF10B981);
+  static const _amber = Color(0xFFF59E0B);
+  static const _red = Color(0xFFEF4444);
 
-class _AddButtonState extends State<_AddButton> {
-  bool _hovering = false;
+  static Color _chipColor(double value) {
+    if (value >= 0.8) return _red;
+    if (value >= 0.6) return _amber;
+    return _green;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovering = true),
-      onExit: (_) => setState(() => _hovering = false),
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: _hovering
-                ? widget.theme.accent.withValues(alpha: 0.1)
-                : const Color(0x00000000),
-            borderRadius: BorderRadius.circular(widget.theme.itemRadius),
-          ),
-          child: Center(
-            child: Text(
-              '+',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color:
-                    _hovering ? widget.theme.accent : widget.theme.textDim,
-              ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _Chip(label: 'C', value: '${(status.cpu * 100).round()}%', color: _chipColor(status.cpu), theme: theme),
+        const SizedBox(width: 4),
+        _Chip(label: 'M', value: '${(status.memory * 100).round()}%', color: _chipColor(status.memory), theme: theme),
+        const SizedBox(width: 4),
+        _Chip(label: 'D', value: '${(status.disk * 100).round()}%', color: _chipColor(status.disk), theme: theme),
+        const SizedBox(width: 4),
+        _WarningChip(count: status.warnings, theme: theme),
+        const SizedBox(width: 8),
+      ],
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
+  const _Chip({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.theme,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+  final NavToggleTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: theme.monoFontFamily,
+              fontWeight: FontWeight.w600,
+              fontSize: 10,
+              color: color,
             ),
           ),
-        ),
+          const SizedBox(width: 3),
+          Text(
+            value,
+            style: TextStyle(
+              fontFamily: theme.monoFontFamily,
+              fontWeight: FontWeight.w500,
+              fontSize: 10,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WarningChip extends StatelessWidget {
+  const _WarningChip({required this.count, required this.theme});
+
+  final int count;
+  final NavToggleTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasWarnings = count > 0;
+    final color = hasWarnings ? const Color(0xFFF59E0B) : theme.textDim;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '\u26A0',
+            style: TextStyle(fontSize: 9, color: color),
+          ),
+          const SizedBox(width: 2),
+          Text(
+            '$count',
+            style: TextStyle(
+              fontFamily: theme.monoFontFamily,
+              fontWeight: FontWeight.w600,
+              fontSize: 10,
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
   }

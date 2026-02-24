@@ -5,6 +5,7 @@ library;
 // Models
 export 'src/models/nav_item.dart';
 export 'src/models/nav_mode.dart';
+export 'src/models/system_status.dart';
 
 // Controller
 export 'src/controller/nav_toggle_controller.dart';

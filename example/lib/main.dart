@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_nav_toggle/flutter_nav_toggle.dart';
 
@@ -28,6 +31,35 @@ class NavToggleDemo extends StatefulWidget {
 
 class _NavToggleDemoState extends State<NavToggleDemo> {
   String _selectedId = 'home';
+  final _random = Random();
+  late Timer _statusTimer;
+  SystemStatus _status = const SystemStatus(
+    cpu: 0.42,
+    memory: 0.67,
+    disk: 0.55,
+    warnings: 3,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _statusTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      setState(() {
+        _status = SystemStatus(
+          cpu: (_status.cpu + (_random.nextDouble() - 0.5) * 0.1).clamp(0.05, 0.95),
+          memory: (_status.memory + (_random.nextDouble() - 0.5) * 0.05).clamp(0.2, 0.95),
+          disk: (_status.disk + (_random.nextDouble() - 0.5) * 0.02).clamp(0.3, 0.95),
+          warnings: (_status.warnings + (_random.nextBool() ? 1 : -1)).clamp(0, 12),
+        );
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _statusTimer.cancel();
+    super.dispose();
+  }
 
   static const _items = [
     NavItem(id: 'home', label: 'Home', icon: Icons.home_outlined),
@@ -90,12 +122,8 @@ class _NavToggleDemoState extends State<NavToggleDemo> {
       body: NavToggleScaffold(
         items: _items,
         initialSelectedId: 'home',
+        systemStatus: _status,
         onItemSelected: (id) => setState(() => _selectedId = id),
-        onAddPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Add button pressed')),
-          );
-        },
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
