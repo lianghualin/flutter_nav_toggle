@@ -194,20 +194,16 @@ class _ExpandableGroupState extends State<_ExpandableGroup>
 
     Color bg;
     Color textColor;
-    Color iconColor;
 
     if (hasSelectedChild && !widget.isExpanded) {
       bg = theme.accent.withValues(alpha: 0.05);
       textColor = theme.accent;
-      iconColor = theme.accent;
     } else if (_hovering) {
       bg = theme.hoverSurface;
       textColor = theme.text;
-      iconColor = theme.text;
     } else {
       bg = const Color(0x00000000);
       textColor = theme.textDim;
-      iconColor = theme.textDim;
     }
 
     return Column(
@@ -220,8 +216,7 @@ class _ExpandableGroupState extends State<_ExpandableGroup>
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
             onTap: widget.onToggleExpanded,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
+            child: Container(
               padding:
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
@@ -230,7 +225,7 @@ class _ExpandableGroupState extends State<_ExpandableGroup>
               ),
               child: Row(
                 children: [
-                  Icon(widget.item.icon, size: 18, color: iconColor),
+                  Icon(widget.item.icon, size: 18, color: textColor),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -248,7 +243,7 @@ class _ExpandableGroupState extends State<_ExpandableGroup>
                     turns: _rotateAnimation,
                     child: Text(
                       '▼',
-                      style: TextStyle(fontSize: 8, color: iconColor),
+                      style: TextStyle(fontSize: 8, color: textColor),
                     ),
                   ),
                 ],
@@ -310,20 +305,16 @@ class _SidebarItemState extends State<_SidebarItem> {
 
     Color bg;
     Color textColor;
-    Color iconColor;
 
     if (widget.isSelected) {
       bg = theme.accent.withValues(alpha: 0.1);
       textColor = theme.accent;
-      iconColor = theme.accent;
     } else if (_hovering) {
       bg = theme.hoverSurface;
       textColor = theme.text;
-      iconColor = theme.text;
     } else {
       bg = const Color(0x00000000);
       textColor = theme.textDim;
-      iconColor = theme.textDim;
     }
 
     return MouseRegion(
@@ -332,8 +323,7 @@ class _SidebarItemState extends State<_SidebarItem> {
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+        child: Container(
           padding: EdgeInsets.symmetric(
             horizontal: 12,
             vertical: widget.isChild ? 8 : 10,
@@ -350,12 +340,12 @@ class _SidebarItemState extends State<_SidebarItem> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w900,
-                    color: iconColor,
+                    color: textColor,
                   ),
                 ),
                 const SizedBox(width: 10),
               ] else ...[
-                Icon(widget.item.icon, size: 18, color: iconColor),
+                Icon(widget.item.icon, size: 18, color: textColor),
                 const SizedBox(width: 10),
               ],
               Expanded(

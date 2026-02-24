@@ -46,8 +46,7 @@ class _ToggleButtonState extends State<ToggleButton> {
           label: widget.isSidebarMode
               ? 'Switch to tab bar navigation'
               : 'Switch to sidebar navigation',
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
+          child: Container(
             width: theme.buttonWidth,
             height: theme.buttonHeight,
             decoration: BoxDecoration(

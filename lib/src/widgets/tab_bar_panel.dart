@@ -262,8 +262,7 @@ class _TabItemState extends State<_TabItem> {
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+        child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
           decoration: BoxDecoration(
@@ -411,8 +410,7 @@ class _DropdownItemState extends State<_DropdownItem> {
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+        child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: bg,
@@ -457,8 +455,7 @@ class _AddButtonState extends State<_AddButton> {
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+        child: Container(
           width: 32,
           height: 32,
           decoration: BoxDecoration(
