@@ -5,3 +5,15 @@ pubspec.lock
 *.iml
 .idea/
 .DS_Store
+
+# Large binary files
+*.mov
+*.mp4
+
+# Auto-generated example boilerplate from flutter create
+example/.gitignore
+example/.metadata
+example/README.md
+example/analysis_options.yaml
+example/test/
+example/web/
