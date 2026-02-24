@@ -123,6 +123,7 @@ class _NavToggleDemoState extends State<NavToggleDemo> {
         items: _items,
         initialSelectedId: 'home',
         systemStatus: _status,
+        userInfo: const UserInfo(name: 'John Doe', role: 'Admin'),
         onItemSelected: (id) => setState(() => _selectedId = id),
         child: Center(
           child: Column(

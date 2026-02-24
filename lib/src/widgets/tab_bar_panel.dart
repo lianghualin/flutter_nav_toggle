@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import '../models/nav_item.dart';
 import '../models/system_status.dart';
+import '../models/user_info.dart';
 import '../theme/nav_toggle_theme.dart';
 
 /// The horizontal tab bar panel — extends from button's right edge to screen right.
@@ -15,12 +16,14 @@ class TabBarPanel extends StatefulWidget {
     required this.selectedId,
     required this.onItemSelected,
     this.systemStatus,
+    this.userInfo,
   });
 
   final List<NavItem> items;
   final String selectedId;
   final ValueChanged<String> onItemSelected;
   final SystemStatus? systemStatus;
+  final UserInfo? userInfo;
 
   @override
   State<TabBarPanel> createState() => _TabBarPanelState();
@@ -30,11 +33,18 @@ class _TabBarPanelState extends State<TabBarPanel> {
   String? _openDropdownId;
   OverlayEntry? _overlayEntry;
   final Map<String, LayerLink> _layerLinks = {};
+  final ScrollController _scrollController = ScrollController();
+  bool _canScrollLeft = false;
+  bool _canScrollRight = false;
 
   @override
   void initState() {
     super.initState();
     _ensureLayerLinks();
+    _scrollController.addListener(_updateScrollIndicators);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateScrollIndicators();
+    });
   }
 
   @override
@@ -50,7 +60,35 @@ class _TabBarPanelState extends State<TabBarPanel> {
   @override
   void dispose() {
     _removeOverlay();
+    _scrollController.removeListener(_updateScrollIndicators);
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _updateScrollIndicators() {
+    if (!_scrollController.hasClients) return;
+    final pos = _scrollController.position;
+    final left = pos.pixels > 0;
+    final right = pos.pixels < pos.maxScrollExtent;
+    if (left != _canScrollLeft || right != _canScrollRight) {
+      setState(() {
+        _canScrollLeft = left;
+        _canScrollRight = right;
+      });
+    }
+  }
+
+  void _scrollBy(double delta) {
+    if (!_scrollController.hasClients) return;
+    final target = (_scrollController.offset + delta).clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
+    _scrollController.animateTo(
+      target,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+    );
   }
 
   void _ensureLayerLinks() {
@@ -137,27 +175,56 @@ class _TabBarPanelState extends State<TabBarPanel> {
       ),
       child: Row(
         children: [
-          for (int i = 0; i < widget.items.length; i++) ...[
-            if (i > 0)
-              Container(
-                width: 1,
-                height: 24,
-                color: theme.border,
-              ),
-            _TabItem(
-              item: widget.items[i],
-              displayLabel: _displayLabelFor(widget.items[i]),
-              isSelected: widget.items[i].id == widget.selectedId ||
-                  _parentContainsSelected(widget.items[i]),
-              isDropdownOpen: _openDropdownId == widget.items[i].id,
-              onTap: () => _onItemTap(widget.items[i]),
+          if (_canScrollLeft)
+            _ScrollArrow(
+              icon: '\u25C0',
+              onTap: () => _scrollBy(-120),
               theme: theme,
-              layerLink: _layerLinks[widget.items[i].id],
             ),
-          ],
-          const Spacer(),
+          Expanded(
+            child: NotificationListener<ScrollMetricsNotification>(
+              onNotification: (_) {
+                _updateScrollIndicators();
+                return false;
+              },
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (int i = 0; i < widget.items.length; i++) ...[
+                      if (i > 0)
+                        Container(
+                          width: 1,
+                          height: 24,
+                          color: theme.border,
+                        ),
+                      _TabItem(
+                        item: widget.items[i],
+                        displayLabel: _displayLabelFor(widget.items[i]),
+                        isSelected: widget.items[i].id == widget.selectedId ||
+                            _parentContainsSelected(widget.items[i]),
+                        isDropdownOpen: _openDropdownId == widget.items[i].id,
+                        onTap: () => _onItemTap(widget.items[i]),
+                        theme: theme,
+                        layerLink: _layerLinks[widget.items[i].id],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (_canScrollRight)
+            _ScrollArrow(
+              icon: '\u25B6',
+              onTap: () => _scrollBy(120),
+              theme: theme,
+            ),
           if (widget.systemStatus != null)
             _StatusChips(status: widget.systemStatus!, theme: theme),
+          if (widget.userInfo != null)
+            _UserChip(userInfo: widget.userInfo!, theme: theme),
           const SizedBox(width: 8),
         ],
       ),
@@ -553,6 +620,100 @@ class _WarningChip extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _UserChip extends StatelessWidget {
+  const _UserChip({required this.userInfo, required this.theme});
+
+  final UserInfo userInfo;
+  final NavToggleTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(left: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: theme.accent.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 22,
+            height: 22,
+            decoration: BoxDecoration(
+              color: theme.accent.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: Center(
+              child: Text(
+                userInfo.initials,
+                style: TextStyle(
+                  fontFamily: theme.navFontFamily,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 9,
+                  color: theme.accent,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ScrollArrow extends StatefulWidget {
+  const _ScrollArrow({
+    required this.icon,
+    required this.onTap,
+    required this.theme,
+  });
+
+  final String icon;
+  final VoidCallback onTap;
+  final NavToggleTheme theme;
+
+  @override
+  State<_ScrollArrow> createState() => _ScrollArrowState();
+}
+
+class _ScrollArrowState extends State<_ScrollArrow> {
+  bool _hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() => _hovering = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: Container(
+          width: 24,
+          height: 24,
+          margin: const EdgeInsets.symmetric(horizontal: 2),
+          decoration: BoxDecoration(
+            color: _hovering
+                ? widget.theme.hoverSurface
+                : const Color(0x00000000),
+            borderRadius: BorderRadius.circular(widget.theme.itemRadius),
+          ),
+          child: Center(
+            child: Text(
+              widget.icon,
+              style: TextStyle(
+                fontSize: 8,
+                color: _hovering ? widget.theme.text : widget.theme.textDim,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

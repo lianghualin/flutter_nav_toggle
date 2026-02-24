@@ -5,6 +5,7 @@ import '../controller/nav_toggle_controller.dart';
 import '../models/nav_item.dart';
 import '../models/nav_mode.dart';
 import '../models/system_status.dart';
+import '../models/user_info.dart';
 import '../theme/nav_toggle_theme.dart';
 import 'sidebar_panel.dart';
 import 'tab_bar_panel.dart';
@@ -22,6 +23,7 @@ class NavToggleScaffold extends StatefulWidget {
     this.initialSelectedId,
     this.onItemSelected,
     this.systemStatus,
+    this.userInfo,
   });
 
   final List<NavItem> items;
@@ -31,6 +33,7 @@ class NavToggleScaffold extends StatefulWidget {
   final String? initialSelectedId;
   final ValueChanged<String>? onItemSelected;
   final SystemStatus? systemStatus;
+  final UserInfo? userInfo;
 
   @override
   State<NavToggleScaffold> createState() => _NavToggleScaffoldState();
@@ -203,6 +206,7 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
                 selectedId: controller.selectedItemId,
                 onItemSelected: _onItemSelected,
                 systemStatus: widget.systemStatus,
+                userInfo: widget.userInfo,
               ),
             ),
           ),
@@ -220,6 +224,7 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
                 selectedId: controller.selectedItemId,
                 onItemSelected: _onItemSelected,
                 systemStatus: widget.systemStatus,
+                userInfo: widget.userInfo,
               ),
             ),
           ),

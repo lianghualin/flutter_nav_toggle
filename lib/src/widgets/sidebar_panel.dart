@@ -1,8 +1,10 @@
 import 'package:flutter/widgets.dart';
 import '../models/nav_item.dart';
 import '../models/system_status.dart';
+import '../models/user_info.dart';
 import '../theme/nav_toggle_theme.dart';
 import 'status_panel.dart';
+import 'user_info_panel.dart';
 
 /// The sidebar navigation panel — 200px wide, fills height below the button.
 ///
@@ -15,12 +17,14 @@ class SidebarPanel extends StatefulWidget {
     required this.selectedId,
     required this.onItemSelected,
     this.systemStatus,
+    this.userInfo,
   });
 
   final List<NavItem> items;
   final String selectedId;
   final ValueChanged<String> onItemSelected;
   final SystemStatus? systemStatus;
+  final UserInfo? userInfo;
 
   @override
   State<SidebarPanel> createState() => _SidebarPanelState();
@@ -102,6 +106,8 @@ class _SidebarPanelState extends State<SidebarPanel> {
                 ),
               ),
             ),
+          if (widget.userInfo != null)
+            UserInfoPanel(userInfo: widget.userInfo!),
         ],
       ),
     );
