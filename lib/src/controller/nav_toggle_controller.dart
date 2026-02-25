@@ -15,8 +15,9 @@ class NavToggleController extends ChangeNotifier {
   NavMode _pendingMode;
   String _selectedItemId;
   NavAnimState _animState;
+  bool _railAnimating = false;
 
-  /// The current navigation mode (only changes at collapse→expand boundary).
+  /// The current navigation mode (only changes at collapse->expand boundary).
   NavMode get mode => _mode;
 
   /// The mode we're transitioning to (equals [mode] when idle).
@@ -29,13 +30,39 @@ class NavToggleController extends ChangeNotifier {
   String get selectedItemId => _selectedItemId;
 
   /// Whether the toggle button should be interactive.
-  bool get canToggle => _animState == NavAnimState.idle;
+  bool get canToggle => _animState == NavAnimState.idle && !_railAnimating;
 
-  /// Begin a mode toggle. Called by the scaffold when the button is pressed.
+  /// Begin a transition to [target] mode via collapse/expand animation.
+  ///
+  /// Only valid transitions: sidebar<->tabBar. No direct iconRail<->tabBar.
+  void beginTransitionTo(NavMode target) {
+    if (!canToggle) return;
+    if (target == _mode) return;
+    _pendingMode = target;
+    _animState = NavAnimState.collapsing;
+    notifyListeners();
+  }
+
+  /// Begin a mode toggle (legacy convenience — toggles sidebar<->tabBar).
   void beginToggle() {
     if (!canToggle) return;
     _pendingMode = _mode == NavMode.sidebar ? NavMode.tabBar : NavMode.sidebar;
     _animState = NavAnimState.collapsing;
+    notifyListeners();
+  }
+
+  /// Set mode immediately without collapse/expand animation.
+  ///
+  /// Used for rail transitions managed by the scaffold's second AnimationController.
+  void setModeImmediate(NavMode mode) {
+    _mode = mode;
+    _pendingMode = mode;
+    notifyListeners();
+  }
+
+  /// Mark whether a rail animation is in progress.
+  void setRailAnimating(bool value) {
+    _railAnimating = value;
     notifyListeners();
   }
 

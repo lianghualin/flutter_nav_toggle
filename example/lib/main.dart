@@ -145,6 +145,10 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
             label: 'Sidebar',
             icon: Icons.view_sidebar_outlined),
         NavItem(
+            id: 'mode_rail',
+            label: 'Icon Rail',
+            icon: Icons.view_compact_outlined),
+        NavItem(
             id: 'mode_tabbar', label: 'Tab Bar', icon: Icons.tab_outlined),
       ],
     ),
@@ -262,7 +266,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       'items_mixed' ||
       'items_deep' =>
         _buildItemsPage(theme),
-      'mode' || 'mode_sidebar' || 'mode_tabbar' => _buildModePage(theme),
+      'mode' || 'mode_sidebar' || 'mode_rail' || 'mode_tabbar' => _buildModePage(theme),
       _ => _buildThemePage(theme),
     };
   }
@@ -850,7 +854,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
     return _PageScaffold(
       theme: theme,
       title: 'Navigation Mode',
-      subtitle: 'Toggle between sidebar and tab bar using the button.',
+      subtitle: 'Three modes: sidebar, icon rail, and tab bar.',
       children: [
         _Section(
           theme: theme,
@@ -859,7 +863,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Vertical panel on the left side.',
+                'Full vertical panel on the left side.',
                 style: TextStyle(
                   fontFamily: theme.monoFontFamily,
                   fontSize: 12,
@@ -868,10 +872,35 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
               ),
               const SizedBox(height: 8),
               _BulletList(theme: theme, items: const [
+                'Left button zone: collapse to icon rail',
+                'Right button zone: toggle to tab bar',
                 'Expand/collapse children with SizeTransition',
                 'Status panel with progress bars at bottom',
-                'User info panel with avatar and role',
-                'Scrollable when items overflow',
+              ]),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        _Section(
+          theme: theme,
+          title: 'Icon Rail Mode',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Narrow vertical strip with icons only.',
+                style: TextStyle(
+                  fontFamily: theme.monoFontFamily,
+                  fontSize: 12,
+                  color: theme.text,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _BulletList(theme: theme, items: const [
+                'Click button to expand back to sidebar',
+                'Hover items for tooltip labels',
+                'Parent items open flyout popups to the right',
+                'Status dots and user avatar at bottom',
               ]),
             ],
           ),
@@ -904,12 +933,12 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         const SizedBox(height: 16),
         _Section(
           theme: theme,
-          title: 'Animation',
+          title: 'Transitions',
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'The toggle animation follows a phased sequence:',
+                'Available transitions:',
                 style: TextStyle(
                   fontFamily: theme.monoFontFamily,
                   fontSize: 12,
@@ -918,14 +947,14 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
               ),
               const SizedBox(height: 8),
               _BulletList(theme: theme, items: const [
-                'Collapse: old panel shrinks via custom clipper',
-                'Icon morph: hamburger icon transitions',
-                'Expand: new panel grows into place',
-                'Content shifts with AnimatedPadding',
+                'Sidebar -> Icon Rail: smooth width morph (left button zone)',
+                'Icon Rail -> Sidebar: smooth width morph (button click)',
+                'Sidebar -> Tab Bar: collapse/expand animation (right button zone)',
+                'Tab Bar -> Sidebar: collapse/expand animation (button click)',
               ]),
               const SizedBox(height: 12),
               Text(
-                'Respects MediaQuery.disableAnimations for accessibility.',
+                'No direct Icon Rail <-> Tab Bar transition.',
                 style: TextStyle(
                   fontFamily: theme.monoFontFamily,
                   fontSize: 12,

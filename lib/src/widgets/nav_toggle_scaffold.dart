@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import '../animation/nav_transition.dart';
@@ -7,12 +8,13 @@ import '../models/nav_mode.dart';
 import '../models/system_status.dart';
 import '../models/user_info.dart';
 import '../theme/nav_toggle_theme.dart';
+import 'icon_rail_panel.dart';
 import 'sidebar_panel.dart';
 import 'tab_bar_panel.dart';
 import 'toggle_button.dart';
 
-/// Top-level scaffold that manages the toggle button, sidebar/tab bar panels,
-/// content area, and all transition animations.
+/// Top-level scaffold that manages the toggle button, sidebar/tab bar/icon rail
+/// panels, content area, and all transition animations.
 class NavToggleScaffold extends StatefulWidget {
   const NavToggleScaffold({
     super.key,
@@ -40,11 +42,17 @@ class NavToggleScaffold extends StatefulWidget {
 }
 
 class _NavToggleScaffoldState extends State<NavToggleScaffold>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final NavToggleController _controller;
+
+  // Sidebar <-> TabBar animation
   late final AnimationController _animController;
   late NavTransitionAnimations _animations;
   bool _collapseHandled = false;
+
+  // Sidebar <-> IconRail animation
+  late final AnimationController _railAnimController;
+  late final CurvedAnimation _railCurvedAnim;
 
   NavToggleTheme get _theme => widget.theme ?? const NavToggleTheme();
 
@@ -56,6 +64,7 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
       initialSelectedId: widget.initialSelectedId ?? widget.items.first.id,
     );
 
+    // Main sidebar<->tabBar animation controller
     _animController = AnimationController(
       vsync: this,
       duration: _theme.totalDuration,
@@ -70,6 +79,18 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
 
     _animController.addListener(_checkCollapseComplete);
     _animController.addStatusListener(_onAnimationStatus);
+
+    // Rail animation controller
+    _railAnimController = AnimationController(
+      vsync: this,
+      duration: _theme.railDuration,
+      value: widget.initialMode == NavMode.iconRail ? 1.0 : 0.0,
+    );
+
+    _railCurvedAnim = CurvedAnimation(
+      parent: _railAnimController,
+      curve: _theme.easeCurve,
+    );
   }
 
   void _onAnimationStatus(AnimationStatus status) {
@@ -90,18 +111,77 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
     }
   }
 
-  void _onTogglePressed() {
+  /// Collapse sidebar to icon rail (smooth width morph).
+  void _onCollapseToRail() {
+    if (!_controller.canToggle) return;
+
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+
+    _controller.setRailAnimating(true);
+    _controller.setModeImmediate(NavMode.iconRail);
+
+    if (reduceMotion) {
+      _railAnimController.value = 1.0;
+      _controller.setRailAnimating(false);
+    } else {
+      _railAnimController.forward().then((_) {
+        _controller.setRailAnimating(false);
+      });
+    }
+  }
+
+  /// Expand from icon rail back to sidebar.
+  void _onExpandFromRail() {
+    if (!_controller.canToggle) return;
+
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+
+    _controller.setRailAnimating(true);
+    _controller.setModeImmediate(NavMode.sidebar);
+
+    if (reduceMotion) {
+      _railAnimController.value = 0.0;
+      _controller.setRailAnimating(false);
+    } else {
+      _railAnimController.reverse().then((_) {
+        _controller.setRailAnimating(false);
+      });
+    }
+  }
+
+  /// Toggle from sidebar to tab bar (existing collapse/expand animation).
+  void _onToggleToTabBar() {
     if (!_controller.canToggle) return;
 
     final reduceMotion =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
 
     if (reduceMotion) {
-      _controller.beginToggle();
+      _controller.beginTransitionTo(NavMode.tabBar);
       _controller.onCollapseComplete();
       _controller.onExpandComplete();
     } else {
-      _controller.beginToggle();
+      _controller.beginTransitionTo(NavMode.tabBar);
+      _collapseHandled = false;
+      _animController.forward(from: 0.0);
+    }
+  }
+
+  /// Toggle from tab bar back to sidebar.
+  void _onBackToSidebar() {
+    if (!_controller.canToggle) return;
+
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+
+    if (reduceMotion) {
+      _controller.beginTransitionTo(NavMode.sidebar);
+      _controller.onCollapseComplete();
+      _controller.onExpandComplete();
+    } else {
+      _controller.beginTransitionTo(NavMode.sidebar);
       _collapseHandled = false;
       _animController.forward(from: 0.0);
     }
@@ -130,6 +210,9 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
         curve: newTheme.easeCurve,
       );
     }
+    if (oldTheme.railDuration != newTheme.railDuration) {
+      _railAnimController.duration = newTheme.railDuration;
+    }
   }
 
   @override
@@ -138,6 +221,8 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
     _animController.removeStatusListener(_onAnimationStatus);
     _animations.dispose();
     _animController.dispose();
+    _railCurvedAnim.dispose();
+    _railAnimController.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -153,9 +238,14 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
           child: AnimatedBuilder(
             animation: _animController,
             builder: (context, _) {
-              return Consumer<NavToggleController>(
-                builder: (context, controller, _) {
-                  return _buildLayout(controller);
+              return AnimatedBuilder(
+                animation: _railAnimController,
+                builder: (context, _) {
+                  return Consumer<NavToggleController>(
+                    builder: (context, controller, _) {
+                      return _buildLayout(controller);
+                    },
+                  );
                 },
               );
             },
@@ -170,15 +260,25 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
     final mode = controller.mode;
     final animState = controller.animState;
 
-    // Calculate panel visibility progress
+    // Rail animation progress: 0 = full sidebar, 1 = icon rail
+    final r = _railCurvedAnim.value;
+
+    // Animated widths based on rail progress
+    final currentNavWidth = lerpDouble(theme.sidebarWidth, theme.railWidth, r)!;
+    final currentButtonWidth =
+        lerpDouble(theme.buttonWidth, theme.railWidth, r)!;
+
+    // Calculate sidebar<->tabBar panel visibility progress
     double sidebarProgress;
     double tabBarProgress;
 
     if (animState == NavAnimState.idle) {
-      sidebarProgress = mode == NavMode.sidebar ? 1.0 : 0.0;
+      sidebarProgress = (mode == NavMode.sidebar || mode == NavMode.iconRail)
+          ? 1.0
+          : 0.0;
       tabBarProgress = mode == NavMode.tabBar ? 1.0 : 0.0;
     } else if (animState == NavAnimState.collapsing) {
-      if (mode == NavMode.sidebar) {
+      if (mode == NavMode.sidebar || mode == NavMode.iconRail) {
         sidebarProgress = 1.0 - _animations.collapse.value;
         tabBarProgress = 0.0;
       } else {
@@ -187,7 +287,7 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
       }
     } else {
       // expanding
-      if (mode == NavMode.sidebar) {
+      if (mode == NavMode.sidebar || mode == NavMode.iconRail) {
         sidebarProgress = _animations.expand.value;
         tabBarProgress = 0.0;
       } else {
@@ -197,8 +297,26 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
     }
 
     // Content padding targets
-    final targetLeft = mode == NavMode.sidebar ? theme.sidebarWidth : 0.0;
+    final bool isLeftPanel =
+        mode == NavMode.sidebar || mode == NavMode.iconRail;
+    final targetLeft = isLeftPanel ? currentNavWidth : 0.0;
     final targetTop = mode == NavMode.tabBar ? theme.buttonHeight : 0.0;
+
+    // Determine button callbacks based on current mode
+    VoidCallback? onLeftPressed;
+    VoidCallback? onRightPressed;
+
+    switch (mode) {
+      case NavMode.sidebar:
+        onLeftPressed = _onCollapseToRail;
+        onRightPressed = _onToggleToTabBar;
+      case NavMode.iconRail:
+        onLeftPressed = _onExpandFromRail;
+        onRightPressed = null;
+      case NavMode.tabBar:
+        onLeftPressed = _onBackToSidebar;
+        onRightPressed = null;
+    }
 
     return Stack(
       fit: StackFit.expand,
@@ -214,15 +332,39 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
           child: widget.child,
         ),
 
-        // Sidebar panel
-        if (sidebarProgress > 0)
+        // Sidebar panel (visible when r < 1.0, i.e. not fully collapsed to rail)
+        if (sidebarProgress > 0 && r < 1.0)
           Positioned(
             left: 0,
             top: theme.buttonHeight,
             bottom: 0,
             child: ClipRect(
               clipper: SidebarClipper(progress: sidebarProgress),
-              child: SidebarPanel(
+              child: Opacity(
+                opacity: (1.0 - r).clamp(0.0, 1.0),
+                child: ClipRect(
+                  clipper: _WidthClipper(width: currentNavWidth),
+                  child: SidebarPanel(
+                    items: widget.items,
+                    selectedId: controller.selectedItemId,
+                    onItemSelected: _onItemSelected,
+                    systemStatus: widget.systemStatus,
+                    userInfo: widget.userInfo,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+        // Icon rail panel (visible when r > 0.0)
+        if (r > 0.0)
+          Positioned(
+            left: 0,
+            top: theme.buttonHeight,
+            bottom: 0,
+            child: Opacity(
+              opacity: r.clamp(0.0, 1.0),
+              child: IconRailPanel(
                 items: widget.items,
                 selectedId: controller.selectedItemId,
                 onItemSelected: _onItemSelected,
@@ -235,7 +377,7 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
         // Tab bar panel
         if (tabBarProgress > 0)
           Positioned(
-            left: theme.buttonWidth,
+            left: currentButtonWidth,
             top: 0,
             right: 0,
             child: ClipRect(
@@ -256,12 +398,30 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
           top: 0,
           child: ToggleButton(
             iconAnimation: _animations.iconMorph,
-            onPressed: _onTogglePressed,
-            isSidebarMode: mode == NavMode.sidebar,
+            onLeftPressed: controller.canToggle ? onLeftPressed : null,
+            onRightPressed: controller.canToggle ? onRightPressed : null,
+            mode: mode,
+            currentWidth: currentButtonWidth,
             enabled: controller.canToggle,
           ),
         ),
       ],
     );
   }
+}
+
+/// Clips a widget to a fixed width, allowing it to render at its natural size
+/// but only showing the left portion up to [width].
+class _WidthClipper extends CustomClipper<Rect> {
+  _WidthClipper({required this.width});
+
+  final double width;
+
+  @override
+  Rect getClip(Size size) {
+    return Rect.fromLTWH(0, 0, width, size.height);
+  }
+
+  @override
+  bool shouldReclip(_WidthClipper oldClipper) => oldClipper.width != width;
 }

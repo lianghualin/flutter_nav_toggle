@@ -6,6 +6,7 @@ class NavToggleTheme {
     this.buttonHeight = 52.0,
     this.buttonWidth = 200.0,
     this.sidebarWidth = 200.0,
+    this.railWidth = 60.0,
     this.background = const Color(0xFFF5F5F7),
     this.surface = const Color(0xFFFFFFFF),
     this.border = const Color(0x1A000000),
@@ -20,6 +21,7 @@ class NavToggleTheme {
     this.expandDuration = const Duration(milliseconds: 550),
     this.iconMorphDuration = const Duration(milliseconds: 450),
     this.contentShiftDuration = const Duration(milliseconds: 480),
+    this.railDuration = const Duration(milliseconds: 300),
     this.easeCurve = const Cubic(0.77, 0, 0.18, 1),
     this.navFontFamily = 'Syne',
     this.monoFontFamily = 'DMMono',
@@ -30,6 +32,7 @@ class NavToggleTheme {
     this.buttonHeight = 52.0,
     this.buttonWidth = 200.0,
     this.sidebarWidth = 200.0,
+    this.railWidth = 60.0,
     this.background = const Color(0xFF111827),
     this.surface = const Color(0xFF1F2937),
     this.border = const Color(0x1AFFFFFF),
@@ -44,6 +47,7 @@ class NavToggleTheme {
     this.expandDuration = const Duration(milliseconds: 550),
     this.iconMorphDuration = const Duration(milliseconds: 450),
     this.contentShiftDuration = const Duration(milliseconds: 480),
+    this.railDuration = const Duration(milliseconds: 300),
     this.easeCurve = const Cubic(0.77, 0, 0.18, 1),
     this.navFontFamily = 'Syne',
     this.monoFontFamily = 'DMMono',
@@ -54,6 +58,7 @@ class NavToggleTheme {
     this.buttonHeight = 52.0,
     this.buttonWidth = 200.0,
     this.sidebarWidth = 200.0,
+    this.railWidth = 60.0,
     this.background = const Color(0xFF0F172A),
     this.surface = const Color(0xFF1E293B),
     this.border = const Color(0x14FFFFFF),
@@ -68,6 +73,7 @@ class NavToggleTheme {
     this.expandDuration = const Duration(milliseconds: 550),
     this.iconMorphDuration = const Duration(milliseconds: 450),
     this.contentShiftDuration = const Duration(milliseconds: 480),
+    this.railDuration = const Duration(milliseconds: 300),
     this.easeCurve = const Cubic(0.77, 0, 0.18, 1),
     this.navFontFamily = 'Syne',
     this.monoFontFamily = 'DMMono',
@@ -78,6 +84,7 @@ class NavToggleTheme {
     this.buttonHeight = 52.0,
     this.buttonWidth = 200.0,
     this.sidebarWidth = 200.0,
+    this.railWidth = 60.0,
     this.background = const Color(0xFF1C1917),
     this.surface = const Color(0xFF292524),
     this.border = const Color(0x14FFFFFF),
@@ -92,6 +99,7 @@ class NavToggleTheme {
     this.expandDuration = const Duration(milliseconds: 550),
     this.iconMorphDuration = const Duration(milliseconds: 450),
     this.contentShiftDuration = const Duration(milliseconds: 480),
+    this.railDuration = const Duration(milliseconds: 300),
     this.easeCurve = const Cubic(0.77, 0, 0.18, 1),
     this.navFontFamily = 'Syne',
     this.monoFontFamily = 'DMMono',
@@ -100,6 +108,7 @@ class NavToggleTheme {
   final double buttonHeight;
   final double buttonWidth;
   final double sidebarWidth;
+  final double railWidth;
   final Color background;
   final Color surface;
   final Color border;
@@ -114,6 +123,7 @@ class NavToggleTheme {
   final Duration expandDuration;
   final Duration iconMorphDuration;
   final Duration contentShiftDuration;
+  final Duration railDuration;
   final Cubic easeCurve;
   final String navFontFamily;
   final String monoFontFamily;
@@ -136,6 +146,7 @@ class NavToggleTheme {
     double? buttonHeight,
     double? buttonWidth,
     double? sidebarWidth,
+    double? railWidth,
     Color? background,
     Color? surface,
     Color? border,
@@ -150,6 +161,7 @@ class NavToggleTheme {
     Duration? expandDuration,
     Duration? iconMorphDuration,
     Duration? contentShiftDuration,
+    Duration? railDuration,
     Cubic? easeCurve,
     String? navFontFamily,
     String? monoFontFamily,
@@ -158,6 +170,7 @@ class NavToggleTheme {
       buttonHeight: buttonHeight ?? this.buttonHeight,
       buttonWidth: buttonWidth ?? this.buttonWidth,
       sidebarWidth: sidebarWidth ?? this.sidebarWidth,
+      railWidth: railWidth ?? this.railWidth,
       background: background ?? this.background,
       surface: surface ?? this.surface,
       border: border ?? this.border,
@@ -172,6 +185,7 @@ class NavToggleTheme {
       expandDuration: expandDuration ?? this.expandDuration,
       iconMorphDuration: iconMorphDuration ?? this.iconMorphDuration,
       contentShiftDuration: contentShiftDuration ?? this.contentShiftDuration,
+      railDuration: railDuration ?? this.railDuration,
       easeCurve: easeCurve ?? this.easeCurve,
       navFontFamily: navFontFamily ?? this.navFontFamily,
       monoFontFamily: monoFontFamily ?? this.monoFontFamily,
