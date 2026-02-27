@@ -8,7 +8,8 @@ A dual-mode navigation widget for Flutter that smoothly morphs between **sidebar
 
 - **Sidebar mode** — vertical panel with expandable/collapsible hierarchical items, status panel, and user info
 - **Tab bar mode** — horizontal bar with overlay dropdowns, compact status chips, and user avatar
-- **Animated toggle** — phased collapse → icon morph → expand transition driven by a single `AnimationController`
+- **Morphing toggle button** — cursor-tracking directional arrows with hamburger-to-arrow icon morph, powered by `flutter_morphing_button`
+- **Animated transitions** — phased collapse → expand driven by a single `AnimationController`
 - **4 built-in themes** — Light, Dark, Ocean, Sunset (or build your own with `NavToggleTheme.copyWith`)
 - **Fully configurable** — dimensions, durations, easing curves, colors, fonts, border radii
 - **Accessibility** — respects `MediaQuery.disableAnimations`
