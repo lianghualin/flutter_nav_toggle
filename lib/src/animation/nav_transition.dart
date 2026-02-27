@@ -43,12 +43,10 @@ class TabBarClipper extends CustomClipper<Rect> {
 /// The total animation is divided into:
 /// - Collapse phase (0.0 → collapseEnd): old panel shrinks
 /// - Expand phase (collapseEnd → 1.0): new panel grows
-/// - Icon morph (0.0 → iconMorphEnd): icon transitions
 class NavTransitionAnimations {
   NavTransitionAnimations({
     required AnimationController controller,
     required double collapseEnd,
-    required double iconMorphEnd,
     required Curve curve,
   })  : collapse = CurvedAnimation(
           parent: controller,
@@ -57,19 +55,13 @@ class NavTransitionAnimations {
         expand = CurvedAnimation(
           parent: controller,
           curve: Interval(collapseEnd, 1.0, curve: curve),
-        ),
-        iconMorph = CurvedAnimation(
-          parent: controller,
-          curve: Interval(0.0, iconMorphEnd, curve: curve),
         );
 
   final CurvedAnimation collapse;
   final CurvedAnimation expand;
-  final CurvedAnimation iconMorph;
 
   void dispose() {
     collapse.dispose();
     expand.dispose();
-    iconMorph.dispose();
   }
 }

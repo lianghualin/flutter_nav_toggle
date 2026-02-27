@@ -19,9 +19,11 @@ export 'src/animation/nav_transition.dart';
 
 // Widgets
 export 'src/widgets/nav_toggle_scaffold.dart';
-export 'src/widgets/toggle_button.dart';
 export 'src/widgets/sidebar_panel.dart';
 export 'src/widgets/tab_bar_panel.dart';
 export 'src/widgets/icon_rail_panel.dart';
 export 'src/widgets/user_info_panel.dart';
-export 'src/widgets/morphing_icon.dart';
+
+// Re-export ModeToggleButton from morphing_button submodule
+export 'package:morphing_button/morphing_button.dart'
+    show ModeToggleButton, ModeToggleState;

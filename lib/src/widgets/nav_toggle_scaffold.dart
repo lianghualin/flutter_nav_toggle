@@ -11,7 +11,7 @@ import '../theme/nav_toggle_theme.dart';
 import 'icon_rail_panel.dart';
 import 'sidebar_panel.dart';
 import 'tab_bar_panel.dart';
-import 'toggle_button.dart';
+import 'package:morphing_button/morphing_button.dart';
 
 /// Top-level scaffold that manages the toggle button, sidebar/tab bar/icon rail
 /// panels, content area, and all transition animations.
@@ -73,7 +73,6 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
     _animations = NavTransitionAnimations(
       controller: _animController,
       collapseEnd: _theme.collapseEnd,
-      iconMorphEnd: _theme.iconMorphEnd,
       curve: _theme.easeCurve,
     );
 
@@ -199,14 +198,12 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
     final newTheme = _theme;
     if (oldTheme.totalDuration != newTheme.totalDuration ||
         oldTheme.collapseEnd != newTheme.collapseEnd ||
-        oldTheme.iconMorphEnd != newTheme.iconMorphEnd ||
         oldTheme.easeCurve != newTheme.easeCurve) {
       _animController.duration = newTheme.totalDuration;
       _animations.dispose();
       _animations = NavTransitionAnimations(
         controller: _animController,
         collapseEnd: newTheme.collapseEnd,
-        iconMorphEnd: newTheme.iconMorphEnd,
         curve: newTheme.easeCurve,
       );
     }
@@ -396,19 +393,43 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
         Positioned(
           left: 0,
           top: 0,
-          child: ToggleButton(
-            iconAnimation: _animations.iconMorph,
-            onLeftPressed: controller.canToggle ? onLeftPressed : null,
-            onRightPressed: controller.canToggle ? onRightPressed : null,
-            mode: mode,
-            currentWidth: currentButtonWidth,
-            enabled: controller.canToggle,
+          child: Container(
+            width: currentButtonWidth,
+            height: theme.buttonHeight,
+            decoration: BoxDecoration(
+              color: theme.surface,
+              border: Border(
+                bottom: BorderSide(color: theme.border, width: 1),
+                right: BorderSide(color: theme.border, width: 1),
+              ),
+            ),
+            child: ModeToggleButton(
+              state: _navModeToToggleState(mode),
+              expandedWidth: theme.buttonWidth,
+              collapsedWidth: theme.railWidth,
+              splitRatio: 0.5,
+              onTap: mode != NavMode.sidebar && controller.canToggle
+                  ? onLeftPressed
+                  : null,
+              onLeftTap: controller.canToggle ? onLeftPressed : null,
+              onRightTap: controller.canToggle ? onRightPressed : null,
+              accentColor: theme.accent,
+              textColor: theme.textDim,
+              enabled: controller.canToggle,
+              animationDuration: theme.railDuration,
+            ),
           ),
         ),
       ],
     );
   }
 }
+
+ModeToggleState _navModeToToggleState(NavMode mode) => switch (mode) {
+      NavMode.sidebar => ModeToggleState.split,
+      NavMode.iconRail => ModeToggleState.collapsedLeft,
+      NavMode.tabBar => ModeToggleState.collapsedRight,
+    };
 
 /// Clips a widget to a fixed width, allowing it to render at its natural size
 /// but only showing the left portion up to [width].
