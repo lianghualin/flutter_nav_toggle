@@ -4,6 +4,21 @@ A dual-mode navigation widget for Flutter that smoothly morphs between **sidebar
 
 ![Example](example.gif)
 
+## Installation
+
+Add `flutter_nav_toggle` to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  flutter_nav_toggle: ^1.0.0
+```
+
+Then run:
+
+```bash
+flutter pub get
+```
+
 ## Features
 
 - **Sidebar mode** — vertical panel with expandable/collapsible hierarchical items, status panel, and user info

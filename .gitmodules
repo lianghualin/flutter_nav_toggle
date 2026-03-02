@@ -1,3 +1,0 @@
-[submodule "packages/morphing_button"]
-	path = packages/morphing_button
-	url = https://github.com/lianghualin/flutter_morphing_button.git

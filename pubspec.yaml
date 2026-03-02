@@ -5,6 +5,10 @@ description: >
 
 version: 1.0.0
 
+homepage: https://github.com/lianghualin/flutter_nav_toggle
+repository: https://github.com/lianghualin/flutter_nav_toggle
+issue_tracker: https://github.com/lianghualin/flutter_nav_toggle/issues
+
 environment:
   sdk: ^3.11.0
   flutter: ">=3.11.0"
@@ -13,8 +17,7 @@ dependencies:
   flutter:
     sdk: flutter
   provider: ^6.1.2
-  morphing_button:
-    path: packages/morphing_button
+  morphing_button: ^0.1.0
 
 dev_dependencies:
   flutter_test:
