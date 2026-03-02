@@ -1,3 +1,7 @@
+## 1.0.1
+
+- Fix example GIF not displaying on pub.dev (use absolute URL)
+
 ## 1.0.0
 
 - Dual-mode navigation: sidebar and tab bar layouts with smooth morphing transitions

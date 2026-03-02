@@ -2,7 +2,7 @@
 
 A dual-mode navigation widget for Flutter that smoothly morphs between **sidebar** and **tab bar** layouts with clip-path animations.
 
-![Example](example.gif)
+![Example](https://raw.githubusercontent.com/lianghualin/flutter_nav_toggle/main/example.gif)
 
 ## Installation
 

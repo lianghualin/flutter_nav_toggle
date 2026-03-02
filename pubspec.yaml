@@ -3,7 +3,7 @@ description: >
   A dual-mode navigation toggle widget that smoothly morphs between
   sidebar and tab bar layouts with clip-path animations.
 
-version: 1.0.0
+version: 1.0.1
 
 homepage: https://github.com/lianghualin/flutter_nav_toggle
 repository: https://github.com/lianghualin/flutter_nav_toggle
