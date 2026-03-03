@@ -1,3 +1,15 @@
+## 1.1.0
+
+- Add badge support on `NavItem` with aggregate counts on expandable parents
+- Add `NavHeader` model for branding (logo, title, subtitle) merged into toggle button
+- Add `NavToggleScaffold.withPages()` constructor with animated page transitions (fade, slide, fadeThrough)
+- Add `showPageHeader` option to display selected item icon and label above content
+- Add keyboard shortcut support (`T` key to toggle navigation mode)
+- Add `onTap` callback to `UserInfo` with hover feedback on all panel variants
+- Hide hamburger icon when header branding is present via `showModeIcon`
+- Fix badge vertical alignment across all sidebar items
+- Upgrade `morphing_button` to ^0.1.3
+
 ## 1.0.1
 
 - Fix example GIF not displaying on pub.dev (use absolute URL)
