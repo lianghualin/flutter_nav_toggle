@@ -3,18 +3,29 @@ import '../models/user_info.dart';
 import '../theme/nav_toggle_theme.dart';
 
 /// Displays user avatar, name, and optional role at the sidebar bottom.
-class UserInfoPanel extends StatelessWidget {
+class UserInfoPanel extends StatefulWidget {
   const UserInfoPanel({super.key, required this.userInfo});
 
   final UserInfo userInfo;
 
   @override
+  State<UserInfoPanel> createState() => _UserInfoPanelState();
+}
+
+class _UserInfoPanelState extends State<UserInfoPanel> {
+  bool _hovering = false;
+
+  @override
   Widget build(BuildContext context) {
     final theme = NavToggleTheme.of(context);
+    final hasTap = widget.userInfo.onTap != null;
 
-    return Container(
+    Widget content = Container(
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
       decoration: BoxDecoration(
+        color: _hovering && hasTap
+            ? theme.hoverSurface
+            : const Color(0x00000000),
         border: Border(
           top: BorderSide(color: theme.border, width: 1),
         ),
@@ -30,7 +41,7 @@ class UserInfoPanel extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                userInfo.initials,
+                widget.userInfo.initials,
                 style: TextStyle(
                   fontFamily: theme.navFontFamily,
                   fontWeight: FontWeight.w700,
@@ -47,7 +58,7 @@ class UserInfoPanel extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  userInfo.name,
+                  widget.userInfo.name,
                   style: TextStyle(
                     fontFamily: theme.navFontFamily,
                     fontWeight: FontWeight.w700,
@@ -56,9 +67,9 @@ class UserInfoPanel extends StatelessWidget {
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (userInfo.role != null)
+                if (widget.userInfo.role != null)
                   Text(
-                    userInfo.role!,
+                    widget.userInfo.role!,
                     style: TextStyle(
                       fontFamily: theme.navFontFamily,
                       fontWeight: FontWeight.w500,
@@ -73,5 +84,19 @@ class UserInfoPanel extends StatelessWidget {
         ],
       ),
     );
+
+    if (hasTap) {
+      content = MouseRegion(
+        onEnter: (_) => setState(() => _hovering = true),
+        onExit: (_) => setState(() => _hovering = false),
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: widget.userInfo.onTap,
+          child: content,
+        ),
+      );
+    }
+
+    return content;
   }
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/widgets.dart';
+import '../models/nav_header.dart';
 import '../models/nav_item.dart';
 import '../models/system_status.dart';
 import '../models/user_info.dart';
 import '../theme/nav_toggle_theme.dart';
+import 'badge_circle.dart';
 
 /// A narrow vertical icon rail — shows only nav item icons.
 ///
@@ -16,6 +18,7 @@ class IconRailPanel extends StatefulWidget {
     required this.onItemSelected,
     this.systemStatus,
     this.userInfo,
+    this.header,
   });
 
   final List<NavItem> items;
@@ -23,6 +26,7 @@ class IconRailPanel extends StatefulWidget {
   final ValueChanged<String> onItemSelected;
   final SystemStatus? systemStatus;
   final UserInfo? userInfo;
+  final NavHeader? header;
 
   @override
   State<IconRailPanel> createState() => _IconRailPanelState();
@@ -131,6 +135,8 @@ class _IconRailPanelState extends State<IconRailPanel> {
       ),
       child: Column(
         children: [
+          if (widget.header != null)
+            _RailHeader(header: widget.header!, theme: theme),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -288,6 +294,7 @@ class _RailItemState extends State<_RailItem> {
             ),
             child: Stack(
               alignment: Alignment.center,
+              clipBehavior: Clip.none,
               children: [
                 Icon(widget.item.icon, size: 20, color: iconColor),
                 if (widget.item.hasChildren)
@@ -300,6 +307,19 @@ class _RailItemState extends State<_RailItem> {
                         fontWeight: FontWeight.w700,
                         color: iconColor.withValues(alpha: 0.5),
                       ),
+                    ),
+                  ),
+                if ((widget.item.hasChildren
+                        ? widget.item.aggregateBadge
+                        : (widget.item.badge ?? 0)) >
+                    0)
+                  Positioned(
+                    top: 4,
+                    right: 2,
+                    child: BadgeCircle(
+                      count: widget.item.hasChildren
+                          ? widget.item.aggregateBadge
+                          : widget.item.badge!,
                     ),
                   ),
               ],
@@ -654,15 +674,25 @@ class _StatusCircleState extends State<_StatusCircle> {
 }
 
 /// Compact user avatar for the icon rail — 28x28 circle with initials.
-class _RailUserAvatar extends StatelessWidget {
+class _RailUserAvatar extends StatefulWidget {
   const _RailUserAvatar({required this.userInfo, required this.theme});
 
   final UserInfo userInfo;
   final NavToggleTheme theme;
 
   @override
+  State<_RailUserAvatar> createState() => _RailUserAvatarState();
+}
+
+class _RailUserAvatarState extends State<_RailUserAvatar> {
+  bool _hovering = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
+    final theme = widget.theme;
+    final hasTap = widget.userInfo.onTap != null;
+
+    Widget avatar = Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
         border: Border(
@@ -674,12 +704,14 @@ class _RailUserAvatar extends StatelessWidget {
           width: 28,
           height: 28,
           decoration: BoxDecoration(
-            color: theme.accent.withValues(alpha: 0.1),
+            color: _hovering && hasTap
+                ? theme.accent.withValues(alpha: 0.2)
+                : theme.accent.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Center(
             child: Text(
-              userInfo.initials,
+              widget.userInfo.initials,
               style: TextStyle(
                 fontFamily: theme.navFontFamily,
                 fontWeight: FontWeight.w700,
@@ -689,6 +721,42 @@ class _RailUserAvatar extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+
+    if (hasTap) {
+      avatar = MouseRegion(
+        onEnter: (_) => setState(() => _hovering = true),
+        onExit: (_) => setState(() => _hovering = false),
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: widget.userInfo.onTap,
+          child: avatar,
+        ),
+      );
+    }
+
+    return avatar;
+  }
+}
+
+class _RailHeader extends StatelessWidget {
+  const _RailHeader({required this.header, required this.theme});
+
+  final NavHeader header;
+  final NavToggleTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: theme.headerHeight,
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: theme.border, width: 1),
+        ),
+      ),
+      child: Center(
+        child: header.logo ?? const SizedBox.shrink(),
       ),
     );
   }

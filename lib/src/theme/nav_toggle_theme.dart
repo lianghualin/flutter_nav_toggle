@@ -25,6 +25,12 @@ class NavToggleTheme {
     this.easeCurve = const Cubic(0.77, 0, 0.18, 1),
     this.navFontFamily = 'Syne',
     this.monoFontFamily = 'DMMono',
+    this.badgeColor = const Color(0xFFEF4444),
+    this.badgeTextColor = const Color(0xFFFFFFFF),
+    this.badgeSize = 18.0,
+    this.headerHeight = 64.0,
+    this.pageTransitionDuration = const Duration(milliseconds: 300),
+    this.pageHeaderHeight = 48.0,
   });
 
   /// Dark theme with deep navy background and emerald accent.
@@ -51,6 +57,12 @@ class NavToggleTheme {
     this.easeCurve = const Cubic(0.77, 0, 0.18, 1),
     this.navFontFamily = 'Syne',
     this.monoFontFamily = 'DMMono',
+    this.badgeColor = const Color(0xFFEF4444),
+    this.badgeTextColor = const Color(0xFFFFFFFF),
+    this.badgeSize = 18.0,
+    this.headerHeight = 64.0,
+    this.pageTransitionDuration = const Duration(milliseconds: 300),
+    this.pageHeaderHeight = 48.0,
   });
 
   /// Ocean theme with deep blue-slate tones and cyan accent.
@@ -77,6 +89,12 @@ class NavToggleTheme {
     this.easeCurve = const Cubic(0.77, 0, 0.18, 1),
     this.navFontFamily = 'Syne',
     this.monoFontFamily = 'DMMono',
+    this.badgeColor = const Color(0xFFEF4444),
+    this.badgeTextColor = const Color(0xFFFFFFFF),
+    this.badgeSize = 18.0,
+    this.headerHeight = 64.0,
+    this.pageTransitionDuration = const Duration(milliseconds: 300),
+    this.pageHeaderHeight = 48.0,
   });
 
   /// Sunset theme with warm stone tones and orange accent.
@@ -103,6 +121,12 @@ class NavToggleTheme {
     this.easeCurve = const Cubic(0.77, 0, 0.18, 1),
     this.navFontFamily = 'Syne',
     this.monoFontFamily = 'DMMono',
+    this.badgeColor = const Color(0xFFEF4444),
+    this.badgeTextColor = const Color(0xFFFFFFFF),
+    this.badgeSize = 18.0,
+    this.headerHeight = 64.0,
+    this.pageTransitionDuration = const Duration(milliseconds: 300),
+    this.pageHeaderHeight = 48.0,
   });
 
   final double buttonHeight;
@@ -127,6 +151,12 @@ class NavToggleTheme {
   final Cubic easeCurve;
   final String navFontFamily;
   final String monoFontFamily;
+  final Color badgeColor;
+  final Color badgeTextColor;
+  final double badgeSize;
+  final double headerHeight;
+  final Duration pageTransitionDuration;
+  final double pageHeaderHeight;
 
   /// Total animation duration (collapse + expand).
   Duration get totalDuration => Duration(
@@ -165,6 +195,12 @@ class NavToggleTheme {
     Cubic? easeCurve,
     String? navFontFamily,
     String? monoFontFamily,
+    Color? badgeColor,
+    Color? badgeTextColor,
+    double? badgeSize,
+    double? headerHeight,
+    Duration? pageTransitionDuration,
+    double? pageHeaderHeight,
   }) {
     return NavToggleTheme(
       buttonHeight: buttonHeight ?? this.buttonHeight,
@@ -189,6 +225,13 @@ class NavToggleTheme {
       easeCurve: easeCurve ?? this.easeCurve,
       navFontFamily: navFontFamily ?? this.navFontFamily,
       monoFontFamily: monoFontFamily ?? this.monoFontFamily,
+      badgeColor: badgeColor ?? this.badgeColor,
+      badgeTextColor: badgeTextColor ?? this.badgeTextColor,
+      badgeSize: badgeSize ?? this.badgeSize,
+      headerHeight: headerHeight ?? this.headerHeight,
+      pageTransitionDuration:
+          pageTransitionDuration ?? this.pageTransitionDuration,
+      pageHeaderHeight: pageHeaderHeight ?? this.pageHeaderHeight,
     );
   }
 

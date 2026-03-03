@@ -1,12 +1,16 @@
+import 'dart:ui';
+
 /// User information displayed in the navigation panels.
 class UserInfo {
   const UserInfo({
     required this.name,
     this.role,
+    this.onTap,
   });
 
   final String name;
   final String? role;
+  final VoidCallback? onTap;
 
   /// Returns the user's initials (up to 2 characters).
   String get initials {

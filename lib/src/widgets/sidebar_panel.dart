@@ -1,8 +1,10 @@
 import 'package:flutter/widgets.dart';
+import '../models/nav_header.dart';
 import '../models/nav_item.dart';
 import '../models/system_status.dart';
 import '../models/user_info.dart';
 import '../theme/nav_toggle_theme.dart';
+import 'badge_circle.dart';
 import 'status_panel.dart';
 import 'user_info_panel.dart';
 
@@ -18,6 +20,7 @@ class SidebarPanel extends StatefulWidget {
     required this.onItemSelected,
     this.systemStatus,
     this.userInfo,
+    this.header,
   });
 
   final List<NavItem> items;
@@ -25,6 +28,7 @@ class SidebarPanel extends StatefulWidget {
   final ValueChanged<String> onItemSelected;
   final SystemStatus? systemStatus;
   final UserInfo? userInfo;
+  final NavHeader? header;
 
   @override
   State<SidebarPanel> createState() => _SidebarPanelState();
@@ -81,6 +85,8 @@ class _SidebarPanelState extends State<SidebarPanel> {
       ),
       child: Column(
         children: [
+          if (widget.header != null)
+            _SidebarHeader(header: widget.header!, theme: theme),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -251,6 +257,12 @@ class _ExpandableGroupState extends State<_ExpandableGroup>
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  if (!widget.isExpanded &&
+                      widget.item.aggregateBadge > 0) ...[
+                    const SizedBox(width: 6),
+                    BadgeCircle(count: widget.item.aggregateBadge),
+                    const SizedBox(width: 4),
+                  ],
                   RotationTransition(
                     turns: _rotateAnimation,
                     child: Text(
@@ -373,9 +385,76 @@ class _SidebarItemState extends State<_SidebarItem> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              if (widget.item.hasBadge) ...[
+                const SizedBox(width: 6),
+                BadgeCircle(count: widget.item.badge!),
+              ],
+              // Reserve space matching the chevron in _ExpandableGroup
+              // so badges align vertically across all items.
+              const SizedBox(width: 12),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SidebarHeader extends StatelessWidget {
+  const _SidebarHeader({required this.header, required this.theme});
+
+  final NavHeader header;
+  final NavToggleTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: theme.headerHeight,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: theme.border, width: 1),
+        ),
+      ),
+      child: Row(
+        children: [
+          if (header.logo != null) ...[
+            header.logo!,
+            const SizedBox(width: 10),
+          ],
+          if (header.title != null || header.subtitle != null)
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (header.title != null)
+                    Text(
+                      header.title!,
+                      style: TextStyle(
+                        fontFamily: theme.navFontFamily,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        color: theme.text,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  if (header.subtitle != null)
+                    Text(
+                      header.subtitle!,
+                      style: TextStyle(
+                        fontFamily: theme.navFontFamily,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 11,
+                        color: theme.textDim,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }

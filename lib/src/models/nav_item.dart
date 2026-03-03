@@ -11,15 +11,31 @@ class NavItem {
     required this.label,
     required this.icon,
     this.children,
+    this.badge,
   });
 
   final String id;
   final String label;
   final IconData icon;
   final List<NavItem>? children;
+  final int? badge;
 
   /// Whether this item has child items.
   bool get hasChildren => children != null && children!.isNotEmpty;
+
+  /// Whether this item has a badge count > 0.
+  bool get hasBadge => badge != null && badge! > 0;
+
+  /// Aggregate badge count from children (if any), plus own badge.
+  int get aggregateBadge {
+    int total = badge ?? 0;
+    if (hasChildren) {
+      for (final child in children!) {
+        total += child.badge ?? 0;
+      }
+    }
+    return total;
+  }
 
   @override
   bool operator ==(Object other) =>

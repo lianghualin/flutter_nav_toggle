@@ -3,6 +3,7 @@
 library;
 
 // Models
+export 'src/models/nav_header.dart';
 export 'src/models/nav_item.dart';
 export 'src/models/nav_mode.dart';
 export 'src/models/system_status.dart';
@@ -16,6 +17,7 @@ export 'src/theme/nav_toggle_theme.dart';
 
 // Animation
 export 'src/animation/nav_transition.dart';
+export 'src/animation/page_transitions.dart';
 
 // Widgets
 export 'src/widgets/nav_toggle_scaffold.dart';

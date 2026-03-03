@@ -66,7 +66,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   late final TextEditingController _nameCtrl;
   late final TextEditingController _roleCtrl;
 
-  // Playground navigation items
+  // Playground navigation items (with badge demos)
   static const _navItems = [
     NavItem(
       id: 'theme',
@@ -97,21 +97,29 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         NavItem(
             id: 'layout_dims',
             label: 'Dimensions',
-            icon: Icons.straighten_outlined),
+            icon: Icons.straighten_outlined,
+            badge: 2),
         NavItem(
             id: 'layout_style',
             label: 'Style',
             icon: Icons.brush_outlined),
       ],
     ),
-    NavItem(id: 'timing', label: 'Timing', icon: Icons.timer_outlined),
+    NavItem(
+        id: 'timing',
+        label: 'Timing',
+        icon: Icons.timer_outlined,
+        badge: 5),
     NavItem(
       id: 'data',
       label: 'Data',
       icon: Icons.analytics_outlined,
       children: [
         NavItem(
-            id: 'data_status', label: 'Status', icon: Icons.speed_outlined),
+            id: 'data_status',
+            label: 'Status',
+            icon: Icons.speed_outlined,
+            badge: 3),
         NavItem(
             id: 'data_user', label: 'User', icon: Icons.person_outlined),
       ],
@@ -236,8 +244,21 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
           warnings: _warnings,
         ),
         userInfo: _showUser
-            ? UserInfo(name: _nameCtrl.text, role: _roleCtrl.text)
+            ? UserInfo(
+                name: _nameCtrl.text,
+                role: _roleCtrl.text,
+                onTap: () {
+                  // Navigate to user page on avatar tap
+                  _onItemSelected('data_user');
+                },
+              )
             : null,
+        header: const NavHeader(
+          logo: Icon(Icons.dashboard, size: 24),
+          title: 'Playground',
+          subtitle: 'NavToggle Demo',
+        ),
+        enableKeyboardShortcuts: true,
         onItemSelected: _onItemSelected,
         child: _buildContent(theme),
       ),
@@ -962,6 +983,19 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
                 ),
               ),
             ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        _Section(
+          theme: theme,
+          title: 'Keyboard Shortcut',
+          child: Text(
+            'Press T to toggle navigation mode. Enabled via enableKeyboardShortcuts: true.',
+            style: TextStyle(
+              fontFamily: theme.monoFontFamily,
+              fontSize: 12,
+              color: theme.text,
+            ),
           ),
         ),
       ],

@@ -1,8 +1,10 @@
 import 'package:flutter/widgets.dart';
+import '../models/nav_header.dart';
 import '../models/nav_item.dart';
 import '../models/system_status.dart';
 import '../models/user_info.dart';
 import '../theme/nav_toggle_theme.dart';
+import 'badge_circle.dart';
 
 /// The horizontal tab bar panel — extends from button's right edge to screen right.
 ///
@@ -17,6 +19,7 @@ class TabBarPanel extends StatefulWidget {
     required this.onItemSelected,
     this.systemStatus,
     this.userInfo,
+    this.header,
   });
 
   final List<NavItem> items;
@@ -24,6 +27,7 @@ class TabBarPanel extends StatefulWidget {
   final ValueChanged<String> onItemSelected;
   final SystemStatus? systemStatus;
   final UserInfo? userInfo;
+  final NavHeader? header;
 
   @override
   State<TabBarPanel> createState() => _TabBarPanelState();
@@ -179,6 +183,8 @@ class _TabBarPanelState extends State<TabBarPanel> {
       ),
       child: Row(
         children: [
+          if (widget.header != null)
+            _TabBarHeader(header: widget.header!, theme: theme),
           if (_canScrollLeft)
             _ScrollArrow(
               icon: '\u25C0',
@@ -371,6 +377,23 @@ class _TabItemState extends State<_TabItem> {
         ),
       ),
     );
+
+    final badgeCount = widget.item.hasChildren
+        ? widget.item.aggregateBadge
+        : (widget.item.badge ?? 0);
+    if (badgeCount > 0) {
+      tab = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          tab,
+          Positioned(
+            top: 2,
+            right: 0,
+            child: BadgeCircle(count: badgeCount),
+          ),
+        ],
+      );
+    }
 
     if (widget.layerLink != null) {
       tab = CompositedTransformTarget(
@@ -629,19 +652,31 @@ class _WarningChip extends StatelessWidget {
   }
 }
 
-class _UserChip extends StatelessWidget {
+class _UserChip extends StatefulWidget {
   const _UserChip({required this.userInfo, required this.theme});
 
   final UserInfo userInfo;
   final NavToggleTheme theme;
 
   @override
+  State<_UserChip> createState() => _UserChipState();
+}
+
+class _UserChipState extends State<_UserChip> {
+  bool _hovering = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
+    final theme = widget.theme;
+    final hasTap = widget.userInfo.onTap != null;
+
+    Widget chip = Container(
       margin: const EdgeInsets.only(left: 8),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: theme.accent.withValues(alpha: 0.1),
+        color: _hovering && hasTap
+            ? theme.accent.withValues(alpha: 0.2)
+            : theme.accent.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -656,7 +691,7 @@ class _UserChip extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                userInfo.initials,
+                widget.userInfo.initials,
                 style: TextStyle(
                   fontFamily: theme.navFontFamily,
                   fontWeight: FontWeight.w700,
@@ -669,6 +704,20 @@ class _UserChip extends StatelessWidget {
         ],
       ),
     );
+
+    if (hasTap) {
+      chip = MouseRegion(
+        onEnter: (_) => setState(() => _hovering = true),
+        onExit: (_) => setState(() => _hovering = false),
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: widget.userInfo.onTap,
+          child: chip,
+        ),
+      );
+    }
+
+    return chip;
   }
 }
 
@@ -718,6 +767,43 @@ class _ScrollArrowState extends State<_ScrollArrow> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _TabBarHeader extends StatelessWidget {
+  const _TabBarHeader({required this.header, required this.theme});
+
+  final NavHeader header;
+  final NavToggleTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          right: BorderSide(color: theme.border, width: 1),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (header.logo != null) header.logo!,
+          if (header.title != null) ...[
+            if (header.logo != null) const SizedBox(width: 8),
+            Text(
+              header.title!,
+              style: TextStyle(
+                fontFamily: theme.navFontFamily,
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+                color: theme.text,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

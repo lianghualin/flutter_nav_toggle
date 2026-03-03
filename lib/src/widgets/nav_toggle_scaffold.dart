@@ -1,8 +1,11 @@
 import 'dart:ui';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import '../animation/nav_transition.dart';
+import '../animation/page_transitions.dart';
 import '../controller/nav_toggle_controller.dart';
+import '../models/nav_header.dart';
 import '../models/nav_item.dart';
 import '../models/nav_mode.dart';
 import '../models/system_status.dart';
@@ -26,6 +29,11 @@ class NavToggleScaffold extends StatefulWidget {
     this.onItemSelected,
     this.systemStatus,
     this.userInfo,
+    this.header,
+    this.pages,
+    this.pageTransitionType,
+    this.showPageHeader = false,
+    this.enableKeyboardShortcuts = false,
   });
 
   final List<NavItem> items;
@@ -36,6 +44,39 @@ class NavToggleScaffold extends StatefulWidget {
   final ValueChanged<String>? onItemSelected;
   final SystemStatus? systemStatus;
   final UserInfo? userInfo;
+  final NavHeader? header;
+
+  /// Page map for automatic content switching. When non-null, the scaffold
+  /// shows the page matching [NavToggleController.selectedItemId] instead of
+  /// [child].
+  final Map<String, Widget>? pages;
+
+  /// Transition type used when switching pages (defaults to fade).
+  final PageTransitionType? pageTransitionType;
+
+  /// Whether to show a header bar above the content area with the selected
+  /// item's icon and label.
+  final bool showPageHeader;
+
+  /// Whether to enable keyboard shortcuts (T to toggle navigation mode).
+  final bool enableKeyboardShortcuts;
+
+  /// Named constructor that accepts a page map for automatic content switching.
+  const NavToggleScaffold.withPages({
+    super.key,
+    required this.items,
+    required Map<String, Widget> this.pages,
+    this.theme,
+    this.initialMode = NavMode.sidebar,
+    this.initialSelectedId,
+    this.onItemSelected,
+    this.systemStatus,
+    this.userInfo,
+    this.header,
+    this.pageTransitionType = PageTransitionType.fade,
+    this.showPageHeader = false,
+    this.enableKeyboardShortcuts = false,
+  }) : child = const SizedBox.shrink();
 
   @override
   State<NavToggleScaffold> createState() => _NavToggleScaffoldState();
@@ -224,9 +265,28 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
     super.dispose();
   }
 
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    if (event.logicalKey != LogicalKeyboardKey.keyT) {
+      return KeyEventResult.ignored;
+    }
+    if (!_controller.canToggle) return KeyEventResult.ignored;
+
+    final mode = _controller.mode;
+    switch (mode) {
+      case NavMode.sidebar:
+        _onToggleToTabBar();
+      case NavMode.tabBar:
+        _onBackToSidebar();
+      case NavMode.iconRail:
+        _onExpandFromRail();
+    }
+    return KeyEventResult.handled;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return NavToggleThemeProvider(
+    Widget scaffold = NavToggleThemeProvider(
       theme: _theme,
       child: ChangeNotifierProvider.value(
         value: _controller,
@@ -250,6 +310,68 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
         ),
       ),
     );
+
+    if (widget.enableKeyboardShortcuts) {
+      scaffold = Focus(
+        autofocus: true,
+        onKeyEvent: _handleKeyEvent,
+        child: scaffold,
+      );
+    }
+
+    return scaffold;
+  }
+
+  /// Finds a [NavItem] by id from the flat+nested items list.
+  NavItem? _findItemById(String id) {
+    for (final item in widget.items) {
+      if (item.id == id) return item;
+      if (item.hasChildren) {
+        for (final child in item.children!) {
+          if (child.id == id) return child;
+        }
+      }
+    }
+    return null;
+  }
+
+  /// Builds the content area: either the page from [pages] map
+  /// (with transitions) or the static [child].
+  Widget _buildContentArea(NavToggleController controller) {
+    final theme = _theme;
+
+    Widget content;
+    if (widget.pages != null) {
+      final selectedId = controller.selectedItemId;
+      final page = widget.pages![selectedId] ??
+          const Center(child: Text('Page not found'));
+      final transitionType =
+          widget.pageTransitionType ?? PageTransitionType.fade;
+
+      content = AnimatedSwitcher(
+        duration: theme.pageTransitionDuration,
+        transitionBuilder: pageTransitionBuilder(transitionType),
+        child: KeyedSubtree(
+          key: ValueKey(selectedId),
+          child: page,
+        ),
+      );
+    } else {
+      content = widget.child;
+    }
+
+    if (widget.showPageHeader) {
+      final selectedItem = _findItemById(controller.selectedItemId);
+      return Column(
+        children: [
+          if (selectedItem != null)
+            _PageHeader(item: selectedItem, theme: theme),
+          Expanded(child: content),
+        ],
+      );
+    }
+
+    return content;
   }
 
   Widget _buildLayout(NavToggleController controller) {
@@ -326,7 +448,7 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
             left: targetLeft,
             top: targetTop,
           ),
-          child: widget.child,
+          child: _buildContentArea(controller),
         ),
 
         // Sidebar panel (visible when r < 1.0, i.e. not fully collapsed to rail)
@@ -389,7 +511,7 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
             ),
           ),
 
-        // Toggle button (always on top)
+        // Toggle button / header (always on top)
         Positioned(
           left: 0,
           top: 0,
@@ -408,6 +530,9 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
               expandedWidth: theme.buttonWidth,
               collapsedWidth: theme.railWidth,
               splitRatio: 0.5,
+              icon: widget.header?.logo,
+              label: widget.header?.title,
+              showModeIcon: widget.header == null,
               onTap: mode != NavMode.sidebar && controller.canToggle
                   ? onLeftPressed
                   : null,
@@ -445,4 +570,41 @@ class _WidthClipper extends CustomClipper<Rect> {
 
   @override
   bool shouldReclip(_WidthClipper oldClipper) => oldClipper.width != width;
+}
+
+/// A thin header bar that shows the selected item's icon and label above content.
+class _PageHeader extends StatelessWidget {
+  const _PageHeader({required this.item, required this.theme});
+
+  final NavItem item;
+  final NavToggleTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: theme.pageHeaderHeight,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: theme.surface,
+        border: Border(
+          bottom: BorderSide(color: theme.border, width: 1),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(item.icon, size: 18, color: theme.text),
+          const SizedBox(width: 10),
+          Text(
+            item.label,
+            style: TextStyle(
+              fontFamily: theme.navFontFamily,
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+              color: theme.text,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
