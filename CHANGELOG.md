@@ -1,3 +1,13 @@
+## 1.1.1
+
+- Add `UserMenuItem` model and `UserInfo.menuItems` for flyout popup menus
+- User avatar tap opens a configurable flyout menu (sidebar: right, icon rail: right, tab bar: down)
+- Flyout dismissed by tapping outside or toggling the avatar
+- Falls back to `onTap` when `menuItems` is null/empty (backward compatible)
+- Sidebar flyout hides header to avoid duplicating visible name/role
+- Add `iconColor` field on `NavItem` for per-item icon coloring
+- Add `time` field on `SystemStatus` with clock display in all panel modes
+
 ## 1.1.0
 
 - Add badge support on `NavItem` with aggregate counts on expandable parents

@@ -8,6 +8,7 @@ export 'src/models/nav_item.dart';
 export 'src/models/nav_mode.dart';
 export 'src/models/system_status.dart';
 export 'src/models/user_info.dart';
+export 'src/models/user_menu_item.dart';
 
 // Controller
 export 'src/controller/nav_toggle_controller.dart';

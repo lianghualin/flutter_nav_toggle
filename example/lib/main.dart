@@ -66,12 +66,13 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   late final TextEditingController _nameCtrl;
   late final TextEditingController _roleCtrl;
 
-  // Playground navigation items (with badge demos)
+  // Playground navigation items (with badge & iconColor demos)
   static const _navItems = [
     NavItem(
       id: 'theme',
       label: 'Theme',
       icon: Icons.palette_outlined,
+      iconColor: Color(0xFFA855F7),
       children: [
         NavItem(
             id: 'theme_light',
@@ -93,6 +94,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       id: 'layout',
       label: 'Layout',
       icon: Icons.dashboard_outlined,
+      iconColor: Color(0xFF3B82F6),
       children: [
         NavItem(
             id: 'layout_dims',
@@ -109,11 +111,13 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         id: 'timing',
         label: 'Timing',
         icon: Icons.timer_outlined,
+        iconColor: Color(0xFFF59E0B),
         badge: 5),
     NavItem(
       id: 'data',
       label: 'Data',
       icon: Icons.analytics_outlined,
+      iconColor: Color(0xFF10B981),
       children: [
         NavItem(
             id: 'data_status',
@@ -128,6 +132,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       id: 'items',
       label: 'Items',
       icon: Icons.list_outlined,
+      iconColor: Color(0xFFEF4444),
       children: [
         NavItem(
             id: 'items_flat',
@@ -147,6 +152,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       id: 'mode',
       label: 'Mode',
       icon: Icons.swap_horiz_outlined,
+      iconColor: Color(0xFF06B6D4),
       children: [
         NavItem(
             id: 'mode_sidebar',
@@ -196,6 +202,13 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
     }
   }
 
+  String _formatTime() {
+    final now = DateTime.now();
+    return '${now.hour.toString().padLeft(2, '0')}:'
+        '${now.minute.toString().padLeft(2, '0')}:'
+        '${now.second.toString().padLeft(2, '0')}';
+  }
+
   void _onItemSelected(String id) {
     setState(() {
       _selectedId = id;
@@ -242,15 +255,26 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
           memory: _memory,
           disk: _disk,
           warnings: _warnings,
+          time: _formatTime(),
         ),
         userInfo: _showUser
             ? UserInfo(
                 name: _nameCtrl.text,
                 role: _roleCtrl.text,
-                onTap: () {
-                  // Navigate to user page on avatar tap
-                  _onItemSelected('data_user');
-                },
+                menuItems: [
+                  UserMenuItem(
+                    label: 'View Profile',
+                    icon: Icons.person_outline,
+                    onTap: () => _onItemSelected('data_user'),
+                  ),
+                  UserMenuItem(
+                    label: 'Sign Out',
+                    icon: Icons.logout,
+                    onTap: () {
+                      // Sign-out placeholder
+                    },
+                  ),
+                ],
               )
             : null,
         header: const NavHeader(

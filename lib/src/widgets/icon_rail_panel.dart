@@ -5,6 +5,7 @@ import '../models/system_status.dart';
 import '../models/user_info.dart';
 import '../theme/nav_toggle_theme.dart';
 import 'badge_circle.dart';
+import 'user_menu_flyout.dart';
 
 /// A narrow vertical icon rail — shows only nav item icons.
 ///
@@ -254,19 +255,23 @@ class _RailItemState extends State<_RailItem> {
   Widget build(BuildContext context) {
     final theme = widget.theme;
 
+    final hasItemColor = widget.item.iconColor != null;
+
     Color bg;
-    Color iconColor;
+    Color themeIconColor;
 
     if (widget.isSelected || widget.isFlyoutOpen) {
       bg = theme.accent.withValues(alpha: 0.1);
-      iconColor = theme.accent;
+      themeIconColor = theme.accent;
     } else if (_hovering) {
       bg = theme.hoverSurface;
-      iconColor = theme.text;
+      themeIconColor = theme.text;
     } else {
       bg = const Color(0x00000000);
-      iconColor = theme.textDim;
+      themeIconColor = theme.textDim;
     }
+
+    final iconColor = hasItemColor ? widget.item.iconColor! : themeIconColor;
 
     return CompositedTransformTarget(
       link: _tooltipLink,
@@ -558,6 +563,15 @@ class _RailStatusCircles extends StatelessWidget {
             color: hasWarnings ? _amber : theme.textDim,
             theme: theme,
           ),
+          if (status.time != null) ...[
+            const SizedBox(height: 6),
+            _StatusCircle(
+              label: status.time!,
+              text: '\u{1F551}',
+              color: theme.textDim,
+              theme: theme,
+            ),
+          ],
         ],
       ),
     );
@@ -686,37 +700,110 @@ class _RailUserAvatar extends StatefulWidget {
 
 class _RailUserAvatarState extends State<_RailUserAvatar> {
   bool _hovering = false;
+  bool _isOpen = false;
+  OverlayEntry? _overlayEntry;
+  final LayerLink _link = LayerLink();
+
+  @override
+  void dispose() {
+    _removeOverlay();
+    super.dispose();
+  }
+
+  void _toggleFlyout() {
+    if (_isOpen) {
+      _closeFlyout();
+    } else {
+      _openFlyout();
+    }
+  }
+
+  void _openFlyout() {
+    _removeOverlay();
+    final theme = widget.theme;
+
+    _overlayEntry = OverlayEntry(
+      builder: (_) => Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: _closeFlyout,
+              behavior: HitTestBehavior.opaque,
+              child: const ColoredBox(color: Color(0x00000000)),
+            ),
+          ),
+          CompositedTransformFollower(
+            link: _link,
+            targetAnchor: Alignment.bottomRight,
+            followerAnchor: Alignment.bottomLeft,
+            offset: const Offset(4, 0),
+            child: UserMenuFlyout(
+              userInfo: widget.userInfo,
+              theme: theme,
+              onClose: _closeFlyout,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+    setState(() => _isOpen = true);
+  }
+
+  void _closeFlyout() {
+    _removeOverlay();
+    if (_isOpen) {
+      setState(() => _isOpen = false);
+    }
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  void _handleTap() {
+    if (widget.userInfo.hasMenu) {
+      _toggleFlyout();
+    } else {
+      widget.userInfo.onTap?.call();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = widget.theme;
-    final hasTap = widget.userInfo.onTap != null;
+    final hasTap = widget.userInfo.onTap != null || widget.userInfo.hasMenu;
 
-    Widget avatar = Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(color: theme.border, width: 1),
-        ),
-      ),
-      child: Center(
-        child: Container(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(
-            color: _hovering && hasTap
-                ? theme.accent.withValues(alpha: 0.2)
-                : theme.accent.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(14),
+    Widget avatar = CompositedTransformTarget(
+      link: _link,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(color: theme.border, width: 1),
           ),
-          child: Center(
-            child: Text(
-              widget.userInfo.initials,
-              style: TextStyle(
-                fontFamily: theme.navFontFamily,
-                fontWeight: FontWeight.w700,
-                fontSize: 11,
-                color: theme.accent,
+        ),
+        child: Center(
+          child: Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: _hovering && hasTap
+                  ? theme.accent.withValues(alpha: 0.2)
+                  : theme.accent.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Center(
+              child: Text(
+                widget.userInfo.initials,
+                style: TextStyle(
+                  fontFamily: theme.navFontFamily,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                  color: theme.accent,
+                ),
               ),
             ),
           ),
@@ -730,7 +817,7 @@ class _RailUserAvatarState extends State<_RailUserAvatar> {
         onExit: (_) => setState(() => _hovering = false),
         cursor: SystemMouseCursors.click,
         child: GestureDetector(
-          onTap: widget.userInfo.onTap,
+          onTap: _handleTap,
           child: avatar,
         ),
       );

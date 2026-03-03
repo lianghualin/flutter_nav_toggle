@@ -209,13 +209,14 @@ class _ExpandableGroupState extends State<_ExpandableGroup>
     final theme = widget.theme;
     final hasSelectedChild =
         widget.item.children!.any((c) => c.id == widget.selectedId);
+    final hasItemColor = widget.item.iconColor != null;
 
     Color bg;
     Color textColor;
 
     if (hasSelectedChild && !widget.isExpanded) {
       bg = theme.accent.withValues(alpha: 0.05);
-      textColor = theme.accent;
+      textColor = hasItemColor ? theme.text : theme.accent;
     } else if (_hovering) {
       bg = theme.hoverSurface;
       textColor = theme.text;
@@ -223,6 +224,8 @@ class _ExpandableGroupState extends State<_ExpandableGroup>
       bg = const Color(0x00000000);
       textColor = theme.textDim;
     }
+
+    final iconColor = widget.item.iconColor ?? textColor;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -243,7 +246,7 @@ class _ExpandableGroupState extends State<_ExpandableGroup>
               ),
               child: Row(
                 children: [
-                  Icon(widget.item.icon, size: 18, color: textColor),
+                  Icon(widget.item.icon, size: 18, color: iconColor),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -330,9 +333,11 @@ class _SidebarItemState extends State<_SidebarItem> {
     Color bg;
     Color textColor;
 
+    final hasItemColor = widget.item.iconColor != null;
+
     if (widget.isSelected) {
       bg = theme.accent.withValues(alpha: 0.1);
-      textColor = theme.accent;
+      textColor = hasItemColor ? theme.text : theme.accent;
     } else if (_hovering) {
       bg = theme.hoverSurface;
       textColor = theme.text;
@@ -340,6 +345,8 @@ class _SidebarItemState extends State<_SidebarItem> {
       bg = const Color(0x00000000);
       textColor = theme.textDim;
     }
+
+    final iconColor = widget.item.iconColor ?? textColor;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovering = true),
@@ -369,7 +376,7 @@ class _SidebarItemState extends State<_SidebarItem> {
                 ),
                 const SizedBox(width: 10),
               ] else ...[
-                Icon(widget.item.icon, size: 18, color: textColor),
+                Icon(widget.item.icon, size: 18, color: iconColor),
                 const SizedBox(width: 10),
               ],
               Expanded(

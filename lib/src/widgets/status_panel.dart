@@ -58,6 +58,10 @@ class StatusPanel extends StatelessWidget {
             count: status.warnings,
             theme: theme,
           ),
+          if (status.time != null) ...[
+            const SizedBox(height: 8),
+            _TimeRow(time: status.time!, theme: theme),
+          ],
         ],
       ),
     );
@@ -177,6 +181,35 @@ class _WarningRow extends StatelessWidget {
             fontWeight: FontWeight.w600,
             fontSize: 12,
             color: color,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TimeRow extends StatelessWidget {
+  const _TimeRow({required this.time, required this.theme});
+
+  final String time;
+  final NavToggleTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(
+          '\u{1F551}',
+          style: TextStyle(fontSize: 12, color: theme.textDim),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          time,
+          style: TextStyle(
+            fontFamily: theme.monoFontFamily,
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+            color: theme.text,
           ),
         ),
       ],

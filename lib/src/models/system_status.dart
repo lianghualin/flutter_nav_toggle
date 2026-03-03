@@ -7,6 +7,7 @@ class SystemStatus {
     this.memory = 0.0,
     this.disk = 0.0,
     this.warnings = 0,
+    this.time,
   });
 
   /// CPU usage (0.0–1.0).
@@ -20,4 +21,7 @@ class SystemStatus {
 
   /// Number of active warnings.
   final int warnings;
+
+  /// Optional time string to display (e.g. '14:32:05').
+  final String? time;
 }

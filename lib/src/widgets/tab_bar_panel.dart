@@ -5,6 +5,7 @@ import '../models/system_status.dart';
 import '../models/user_info.dart';
 import '../theme/nav_toggle_theme.dart';
 import 'badge_circle.dart';
+import 'user_menu_flyout.dart';
 
 /// The horizontal tab bar panel — extends from button's right edge to screen right.
 ///
@@ -557,6 +558,10 @@ class _StatusChips extends StatelessWidget {
         _Chip(label: 'D', value: '${(status.disk * 100).round()}%', color: _chipColor(status.disk), theme: theme),
         const SizedBox(width: 4),
         _WarningChip(count: status.warnings, theme: theme),
+        if (status.time != null) ...[
+          const SizedBox(width: 4),
+          _TimeChip(time: status.time!, theme: theme),
+        ],
         const SizedBox(width: 8),
       ],
     );
@@ -652,6 +657,33 @@ class _WarningChip extends StatelessWidget {
   }
 }
 
+class _TimeChip extends StatelessWidget {
+  const _TimeChip({required this.time, required this.theme});
+
+  final String time;
+  final NavToggleTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: theme.textDim.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        time,
+        style: TextStyle(
+          fontFamily: theme.monoFontFamily,
+          fontWeight: FontWeight.w600,
+          fontSize: 10,
+          color: theme.text,
+        ),
+      ),
+    );
+  }
+}
+
 class _UserChip extends StatefulWidget {
   const _UserChip({required this.userInfo, required this.theme});
 
@@ -664,44 +696,117 @@ class _UserChip extends StatefulWidget {
 
 class _UserChipState extends State<_UserChip> {
   bool _hovering = false;
+  bool _isOpen = false;
+  OverlayEntry? _overlayEntry;
+  final LayerLink _link = LayerLink();
+
+  @override
+  void dispose() {
+    _removeOverlay();
+    super.dispose();
+  }
+
+  void _toggleFlyout() {
+    if (_isOpen) {
+      _closeFlyout();
+    } else {
+      _openFlyout();
+    }
+  }
+
+  void _openFlyout() {
+    _removeOverlay();
+    final theme = widget.theme;
+
+    _overlayEntry = OverlayEntry(
+      builder: (_) => Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: _closeFlyout,
+              behavior: HitTestBehavior.opaque,
+              child: const ColoredBox(color: Color(0x00000000)),
+            ),
+          ),
+          CompositedTransformFollower(
+            link: _link,
+            targetAnchor: Alignment.bottomRight,
+            followerAnchor: Alignment.topRight,
+            offset: const Offset(0, 2),
+            child: UserMenuFlyout(
+              userInfo: widget.userInfo,
+              theme: theme,
+              onClose: _closeFlyout,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+    setState(() => _isOpen = true);
+  }
+
+  void _closeFlyout() {
+    _removeOverlay();
+    if (_isOpen) {
+      setState(() => _isOpen = false);
+    }
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  void _handleTap() {
+    if (widget.userInfo.hasMenu) {
+      _toggleFlyout();
+    } else {
+      widget.userInfo.onTap?.call();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = widget.theme;
-    final hasTap = widget.userInfo.onTap != null;
+    final hasTap = widget.userInfo.onTap != null || widget.userInfo.hasMenu;
 
-    Widget chip = Container(
-      margin: const EdgeInsets.only(left: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-      decoration: BoxDecoration(
-        color: _hovering && hasTap
-            ? theme.accent.withValues(alpha: 0.2)
-            : theme.accent.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 22,
-            height: 22,
-            decoration: BoxDecoration(
-              color: theme.accent.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(11),
-            ),
-            child: Center(
-              child: Text(
-                widget.userInfo.initials,
-                style: TextStyle(
-                  fontFamily: theme.navFontFamily,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 9,
-                  color: theme.accent,
+    Widget chip = CompositedTransformTarget(
+      link: _link,
+      child: Container(
+        margin: const EdgeInsets.only(left: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        decoration: BoxDecoration(
+          color: _hovering && hasTap
+              ? theme.accent.withValues(alpha: 0.2)
+              : theme.accent.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                color: theme.accent.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: Center(
+                child: Text(
+                  widget.userInfo.initials,
+                  style: TextStyle(
+                    fontFamily: theme.navFontFamily,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 9,
+                    color: theme.accent,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
 
@@ -711,7 +816,7 @@ class _UserChipState extends State<_UserChip> {
         onExit: (_) => setState(() => _hovering = false),
         cursor: SystemMouseCursors.click,
         child: GestureDetector(
-          onTap: widget.userInfo.onTap,
+          onTap: _handleTap,
           child: chip,
         ),
       );

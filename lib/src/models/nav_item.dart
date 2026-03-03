@@ -12,6 +12,7 @@ class NavItem {
     required this.icon,
     this.children,
     this.badge,
+    this.iconColor,
   });
 
   final String id;
@@ -19,6 +20,12 @@ class NavItem {
   final IconData icon;
   final List<NavItem>? children;
   final int? badge;
+
+  /// Optional per-item icon color. When set, the icon always displays in this
+  /// color (selection is indicated by the background highlight instead).
+  /// When null, the icon color follows the theme (accent when selected,
+  /// textDim when idle).
+  final Color? iconColor;
 
   /// Whether this item has child items.
   bool get hasChildren => children != null && children!.isNotEmpty;
