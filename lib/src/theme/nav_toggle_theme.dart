@@ -31,6 +31,9 @@ class NavToggleTheme {
     this.headerHeight = 64.0,
     this.pageTransitionDuration = const Duration(milliseconds: 300),
     this.pageHeaderHeight = 48.0,
+    this.autoResponsive = false,
+    this.breakpointSidebar = 1024.0,
+    this.breakpointRail = 768.0,
   });
 
   /// Dark theme with deep navy background and emerald accent.
@@ -63,6 +66,9 @@ class NavToggleTheme {
     this.headerHeight = 64.0,
     this.pageTransitionDuration = const Duration(milliseconds: 300),
     this.pageHeaderHeight = 48.0,
+    this.autoResponsive = false,
+    this.breakpointSidebar = 1024.0,
+    this.breakpointRail = 768.0,
   });
 
   /// Ocean theme with deep blue-slate tones and cyan accent.
@@ -95,6 +101,9 @@ class NavToggleTheme {
     this.headerHeight = 64.0,
     this.pageTransitionDuration = const Duration(milliseconds: 300),
     this.pageHeaderHeight = 48.0,
+    this.autoResponsive = false,
+    this.breakpointSidebar = 1024.0,
+    this.breakpointRail = 768.0,
   });
 
   /// Sunset theme with warm stone tones and orange accent.
@@ -127,6 +136,9 @@ class NavToggleTheme {
     this.headerHeight = 64.0,
     this.pageTransitionDuration = const Duration(milliseconds: 300),
     this.pageHeaderHeight = 48.0,
+    this.autoResponsive = false,
+    this.breakpointSidebar = 1024.0,
+    this.breakpointRail = 768.0,
   });
 
   final double buttonHeight;
@@ -157,6 +169,20 @@ class NavToggleTheme {
   final double headerHeight;
   final Duration pageTransitionDuration;
   final double pageHeaderHeight;
+
+  /// Whether navigation mode auto-switches based on screen width.
+  ///
+  /// When true, the scaffold uses [breakpointSidebar] and [breakpointRail]
+  /// to choose between sidebar, icon rail, and tab bar modes automatically.
+  /// Manual toggle still works as an override until the next resize crossing.
+  final bool autoResponsive;
+
+  /// Screen width above which sidebar mode is used (default 1024).
+  final double breakpointSidebar;
+
+  /// Screen width above which icon rail mode is used (default 768).
+  /// Below this, tab bar mode is used.
+  final double breakpointRail;
 
   /// Total animation duration (collapse + expand).
   Duration get totalDuration => Duration(
@@ -201,6 +227,9 @@ class NavToggleTheme {
     double? headerHeight,
     Duration? pageTransitionDuration,
     double? pageHeaderHeight,
+    bool? autoResponsive,
+    double? breakpointSidebar,
+    double? breakpointRail,
   }) {
     return NavToggleTheme(
       buttonHeight: buttonHeight ?? this.buttonHeight,
@@ -232,6 +261,9 @@ class NavToggleTheme {
       pageTransitionDuration:
           pageTransitionDuration ?? this.pageTransitionDuration,
       pageHeaderHeight: pageHeaderHeight ?? this.pageHeaderHeight,
+      autoResponsive: autoResponsive ?? this.autoResponsive,
+      breakpointSidebar: breakpointSidebar ?? this.breakpointSidebar,
+      breakpointRail: breakpointRail ?? this.breakpointRail,
     );
   }
 

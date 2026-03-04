@@ -56,11 +56,16 @@ class StatusPanel extends StatelessWidget {
           const SizedBox(height: 10),
           _WarningRow(
             count: status.warnings,
+            onTap: status.onWarningTap,
             theme: theme,
           ),
           if (status.time != null) ...[
             const SizedBox(height: 8),
             _TimeRow(time: status.time!, theme: theme),
+          ],
+          if (status.userName != null) ...[
+            const SizedBox(height: 8),
+            _UserNameRow(name: status.userName!, theme: theme),
           ],
         ],
       ),
@@ -156,35 +161,66 @@ class _MiniProgressBar extends StatelessWidget {
   }
 }
 
-class _WarningRow extends StatelessWidget {
-  const _WarningRow({required this.count, required this.theme});
+class _WarningRow extends StatefulWidget {
+  const _WarningRow({
+    required this.count,
+    this.onTap,
+    required this.theme,
+  });
 
   final int count;
+  final VoidCallback? onTap;
   final NavToggleTheme theme;
 
   @override
-  Widget build(BuildContext context) {
-    final hasWarnings = count > 0;
-    final color = hasWarnings ? const Color(0xFFF59E0B) : theme.textDim;
+  State<_WarningRow> createState() => _WarningRowState();
+}
 
-    return Row(
+class _WarningRowState extends State<_WarningRow> {
+  bool _hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasWarnings = widget.count > 0;
+    final color = hasWarnings ? const Color(0xFFF59E0B) : widget.theme.textDim;
+
+    Widget row = Row(
       children: [
         Text(
           '\u26A0',
           style: TextStyle(fontSize: 12, color: color),
         ),
         const SizedBox(width: 6),
-        Text(
-          '$count warning${count == 1 ? '' : 's'}',
-          style: TextStyle(
-            fontFamily: theme.navFontFamily,
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
-            color: color,
+        Expanded(
+          child: Text(
+            '${widget.count} warning${widget.count == 1 ? '' : 's'}',
+            style: TextStyle(
+              fontFamily: widget.theme.navFontFamily,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+              color: color,
+              decoration:
+                  _hovering && widget.onTap != null ? TextDecoration.underline : null,
+              decorationColor: color,
+            ),
           ),
         ),
       ],
     );
+
+    if (widget.onTap != null) {
+      row = MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _hovering = true),
+        onExit: (_) => setState(() => _hovering = false),
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: row,
+        ),
+      );
+    }
+
+    return row;
   }
 }
 
@@ -210,6 +246,38 @@ class _TimeRow extends StatelessWidget {
             fontWeight: FontWeight.w600,
             fontSize: 12,
             color: theme.text,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _UserNameRow extends StatelessWidget {
+  const _UserNameRow({required this.name, required this.theme});
+
+  final String name;
+  final NavToggleTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(
+          '\u{1F464}',
+          style: TextStyle(fontSize: 12, color: theme.textDim),
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            name,
+            style: TextStyle(
+              fontFamily: theme.navFontFamily,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+              color: theme.text,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],

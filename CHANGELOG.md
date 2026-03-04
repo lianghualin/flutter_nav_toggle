@@ -1,3 +1,13 @@
+## 1.2.0
+
+- Add auto-responsive mode with configurable breakpoints (`autoResponsive`, `breakpointSidebar`, `breakpointRail` on `NavToggleTheme`)
+- Add overlay sidebar mode — floating sidebar with scrim dismiss on narrow screens when auto-responsive is enabled
+- Add `userName`, `onWarningTap`, and `copyWith()` to `SystemStatus` model
+- Add `updateStatus()` and `updateStatusSilent()` to `NavToggleController` for high-frequency status updates
+- Tappable warning row with hover feedback when `onWarningTap` is set
+- Add `isOverlay`, `showOverlaySidebar()`, `dismissOverlay()` to `NavToggleController`
+- Keyboard shortcut `T` supports overlay show/dismiss on narrow screens
+
 ## 1.1.1
 
 - Add `UserMenuItem` model and `UserInfo.menuItems` for flyout popup menus

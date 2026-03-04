@@ -58,6 +58,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   double _disk = 0.55;
   int _warnings = 3;
   bool _autoUpdate = true;
+  bool _autoResponsive = false;
   Timer? _statusTimer;
   final _random = Random();
 
@@ -237,6 +238,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       expandDuration: Duration(milliseconds: _expandMs),
       iconMorphDuration: Duration(milliseconds: _morphMs),
       contentShiftDuration: Duration(milliseconds: _shiftMs),
+      autoResponsive: _autoResponsive,
     );
   }
 
@@ -256,6 +258,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
           disk: _disk,
           warnings: _warnings,
           time: _formatTime(),
+          onWarningTap: () => _onItemSelected('data_status'),
         ),
         userInfo: _showUser
             ? UserInfo(
@@ -663,6 +666,40 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
                   fontFamily: theme.monoFontFamily,
                   fontSize: 12,
                   color: theme.textDim,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        _Section(
+          theme: theme,
+          title: 'Auto-Responsive',
+          child: Row(
+            children: [
+              SizedBox(
+                height: 24,
+                width: 40,
+                child: Switch(
+                  value: _autoResponsive,
+                  activeTrackColor: theme.accent,
+                  onChanged: (v) {
+                    setState(() => _autoResponsive = v);
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  _autoResponsive
+                      ? 'Auto-switches mode at 1024/768px breakpoints. '
+                          'Toggle button shows overlay sidebar on narrow screens.'
+                      : 'Manual toggle only',
+                  style: TextStyle(
+                    fontFamily: theme.monoFontFamily,
+                    fontSize: 12,
+                    color: theme.textDim,
+                  ),
                 ),
               ),
             ],

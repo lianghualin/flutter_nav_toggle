@@ -95,6 +95,12 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
   late final AnimationController _railAnimController;
   late final CurvedAnimation _railCurvedAnim;
 
+  // Overlay sidebar scrim animation
+  late final AnimationController _scrimController;
+
+  // Track screen width for auto-responsive
+  double _lastWidth = 0.0;
+
   NavToggleTheme get _theme => widget.theme ?? const NavToggleTheme();
 
   @override
@@ -130,6 +136,12 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
     _railCurvedAnim = CurvedAnimation(
       parent: _railAnimController,
       curve: _theme.easeCurve,
+    );
+
+    // Scrim for overlay sidebar
+    _scrimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
     );
   }
 
@@ -230,6 +242,53 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
   void _onItemSelected(String id) {
     _controller.selectItem(id);
     widget.onItemSelected?.call(id);
+    // Auto-dismiss overlay sidebar on item selection
+    if (_controller.isOverlay) {
+      _dismissOverlay();
+    }
+  }
+
+  /// Show the sidebar as overlay (narrow screen toggle).
+  void _showOverlaySidebar() {
+    _controller.showOverlaySidebar();
+    _scrimController.forward();
+    // Set rail to 0 so full sidebar is shown
+    _railAnimController.value = 0.0;
+  }
+
+  /// Dismiss the overlay sidebar with scrim fade-out.
+  void _dismissOverlay() {
+    final theme = _theme;
+    NavMode fallback;
+    if (theme.autoResponsive) {
+      if (_lastWidth >= theme.breakpointRail) {
+        fallback = NavMode.iconRail;
+      } else {
+        fallback = NavMode.tabBar;
+      }
+    } else {
+      fallback = NavMode.tabBar;
+    }
+    _scrimController.reverse();
+    _controller.dismissOverlay(fallbackMode: fallback);
+  }
+
+  /// Compute the correct auto-responsive mode for the current width.
+  void _handleAutoResponsive(double width) {
+    if (!_theme.autoResponsive) return;
+    if (width == _lastWidth) return;
+    _lastWidth = width;
+    _controller.updateForScreenWidth(
+      width,
+      _theme.breakpointSidebar,
+      _theme.breakpointRail,
+    );
+    // Sync rail animation value to match mode
+    if (_controller.mode == NavMode.iconRail) {
+      _railAnimController.value = 1.0;
+    } else if (_controller.mode == NavMode.sidebar) {
+      _railAnimController.value = 0.0;
+    }
   }
 
   @override
@@ -261,6 +320,7 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
     _animController.dispose();
     _railCurvedAnim.dispose();
     _railAnimController.dispose();
+    _scrimController.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -272,7 +332,23 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
     }
     if (!_controller.canToggle) return KeyEventResult.ignored;
 
+    // Dismiss overlay if showing
+    if (_controller.isOverlay) {
+      _dismissOverlay();
+      return KeyEventResult.handled;
+    }
+
     final mode = _controller.mode;
+    final theme = _theme;
+
+    // On narrow screens with autoResponsive, show overlay sidebar
+    if (theme.autoResponsive &&
+        _lastWidth < theme.breakpointSidebar &&
+        mode != NavMode.sidebar) {
+      _showOverlaySidebar();
+      return KeyEventResult.handled;
+    }
+
     switch (mode) {
       case NavMode.sidebar:
         _onToggleToTabBar();
@@ -286,27 +362,46 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
 
   @override
   Widget build(BuildContext context) {
+    Widget inner = AnimatedBuilder(
+      animation: _animController,
+      builder: (context, _) {
+        return AnimatedBuilder(
+          animation: _railAnimController,
+          builder: (context, _) {
+            return AnimatedBuilder(
+              animation: _scrimController,
+              builder: (context, _) {
+                return Consumer<NavToggleController>(
+                  builder: (context, controller, _) {
+                    return _buildLayout(controller);
+                  },
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+
+    // Wrap in LayoutBuilder for auto-responsive mode
+    if (_theme.autoResponsive) {
+      inner = LayoutBuilder(
+        builder: (context, constraints) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _handleAutoResponsive(constraints.maxWidth);
+          });
+          return inner;
+        },
+      );
+    }
+
     Widget scaffold = NavToggleThemeProvider(
       theme: _theme,
       child: ChangeNotifierProvider.value(
         value: _controller,
         child: Container(
           color: _theme.background,
-          child: AnimatedBuilder(
-            animation: _animController,
-            builder: (context, _) {
-              return AnimatedBuilder(
-                animation: _railAnimController,
-                builder: (context, _) {
-                  return Consumer<NavToggleController>(
-                    builder: (context, controller, _) {
-                      return _buildLayout(controller);
-                    },
-                  );
-                },
-              );
-            },
-          ),
+          child: inner,
         ),
       ),
     );
@@ -378,6 +473,7 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
     final theme = _theme;
     final mode = controller.mode;
     final animState = controller.animState;
+    final isOverlay = controller.isOverlay;
 
     // Rail animation progress: 0 = full sidebar, 1 = icon rail
     final r = _railCurvedAnim.value;
@@ -391,7 +487,11 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
     double sidebarProgress;
     double tabBarProgress;
 
-    if (animState == NavAnimState.idle) {
+    if (isOverlay) {
+      // Overlay: sidebar always fully visible, keep underlying tab bar
+      sidebarProgress = 1.0;
+      tabBarProgress = 1.0;
+    } else if (animState == NavAnimState.idle) {
       sidebarProgress = (mode == NavMode.sidebar || mode == NavMode.iconRail)
           ? 1.0
           : 0.0;
@@ -415,27 +515,48 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
       }
     }
 
-    // Content padding targets
+    // Content padding targets — overlay sidebar doesn't push content
     final bool isLeftPanel =
-        mode == NavMode.sidebar || mode == NavMode.iconRail;
+        !isOverlay && (mode == NavMode.sidebar || mode == NavMode.iconRail);
     final targetLeft = isLeftPanel ? currentNavWidth : 0.0;
-    final targetTop = mode == NavMode.tabBar ? theme.buttonHeight : 0.0;
+    final targetTop =
+        (isOverlay || mode == NavMode.tabBar) ? theme.buttonHeight : 0.0;
 
     // Determine button callbacks based on current mode
     VoidCallback? onLeftPressed;
     VoidCallback? onRightPressed;
 
-    switch (mode) {
-      case NavMode.sidebar:
-        onLeftPressed = _onCollapseToRail;
-        onRightPressed = _onToggleToTabBar;
-      case NavMode.iconRail:
-        onLeftPressed = _onExpandFromRail;
-        onRightPressed = null;
-      case NavMode.tabBar:
-        onLeftPressed = _onBackToSidebar;
-        onRightPressed = null;
+    if (isOverlay) {
+      // In overlay mode, button dismisses the overlay
+      onLeftPressed = _dismissOverlay;
+      onRightPressed = null;
+    } else if (theme.autoResponsive &&
+        _lastWidth < theme.breakpointSidebar &&
+        mode != NavMode.sidebar) {
+      // Narrow screen + auto-responsive: toggle shows overlay
+      onLeftPressed = _showOverlaySidebar;
+      onRightPressed = null;
+    } else {
+      switch (mode) {
+        case NavMode.sidebar:
+          onLeftPressed = _onCollapseToRail;
+          onRightPressed = _onToggleToTabBar;
+        case NavMode.iconRail:
+          onLeftPressed = _onExpandFromRail;
+          onRightPressed = null;
+        case NavMode.tabBar:
+          onLeftPressed = _onBackToSidebar;
+          onRightPressed = null;
+      }
     }
+
+    // Scrim opacity
+    final scrimOpacity = _scrimController.value;
+
+    // For toggle button, use the underlying mode when overlay is active
+    final buttonMode = isOverlay ? NavMode.sidebar : mode;
+    // Button width when overlay: full sidebar width
+    final overlayButtonWidth = isOverlay ? theme.buttonWidth : currentButtonWidth;
 
     return Stack(
       fit: StackFit.expand,
@@ -451,8 +572,56 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
           child: _buildContentArea(controller),
         ),
 
-        // Sidebar panel (visible when r < 1.0, i.e. not fully collapsed to rail)
-        if (sidebarProgress > 0 && r < 1.0)
+        // Tab bar panel (under scrim when overlay is active)
+        if (tabBarProgress > 0 && !isOverlay)
+          Positioned(
+            left: currentButtonWidth,
+            top: 0,
+            right: 0,
+            child: ClipRect(
+              clipper: TabBarClipper(progress: tabBarProgress),
+              child: TabBarPanel(
+                items: widget.items,
+                selectedId: controller.selectedItemId,
+                onItemSelected: _onItemSelected,
+                systemStatus: widget.systemStatus,
+                userInfo: widget.userInfo,
+              ),
+            ),
+          ),
+
+        // Icon rail panel (visible when r > 0.0 and not in overlay)
+        if (r > 0.0 && !isOverlay)
+          Positioned(
+            left: 0,
+            top: theme.buttonHeight,
+            bottom: 0,
+            child: Opacity(
+              opacity: r.clamp(0.0, 1.0),
+              child: IconRailPanel(
+                items: widget.items,
+                selectedId: controller.selectedItemId,
+                onItemSelected: _onItemSelected,
+                systemStatus: widget.systemStatus,
+                userInfo: widget.userInfo,
+              ),
+            ),
+          ),
+
+        // Scrim overlay (tap to dismiss)
+        if (scrimOpacity > 0)
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: _dismissOverlay,
+              child: Container(
+                color: const Color(0xFF000000)
+                    .withValues(alpha: 0.4 * scrimOpacity),
+              ),
+            ),
+          ),
+
+        // Sidebar panel — normal or overlay mode
+        if (sidebarProgress > 0 && r < 1.0 && !isOverlay)
           Positioned(
             left: 0,
             top: theme.buttonHeight,
@@ -475,39 +644,18 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
             ),
           ),
 
-        // Icon rail panel (visible when r > 0.0)
-        if (r > 0.0)
+        // Overlay sidebar (floats above scrim)
+        if (isOverlay)
           Positioned(
             left: 0,
             top: theme.buttonHeight,
             bottom: 0,
-            child: Opacity(
-              opacity: r.clamp(0.0, 1.0),
-              child: IconRailPanel(
-                items: widget.items,
-                selectedId: controller.selectedItemId,
-                onItemSelected: _onItemSelected,
-                systemStatus: widget.systemStatus,
-                userInfo: widget.userInfo,
-              ),
-            ),
-          ),
-
-        // Tab bar panel
-        if (tabBarProgress > 0)
-          Positioned(
-            left: currentButtonWidth,
-            top: 0,
-            right: 0,
-            child: ClipRect(
-              clipper: TabBarClipper(progress: tabBarProgress),
-              child: TabBarPanel(
-                items: widget.items,
-                selectedId: controller.selectedItemId,
-                onItemSelected: _onItemSelected,
-                systemStatus: widget.systemStatus,
-                userInfo: widget.userInfo,
-              ),
+            child: SidebarPanel(
+              items: widget.items,
+              selectedId: controller.selectedItemId,
+              onItemSelected: _onItemSelected,
+              systemStatus: widget.systemStatus,
+              userInfo: widget.userInfo,
             ),
           ),
 
@@ -516,7 +664,7 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
           left: 0,
           top: 0,
           child: Container(
-            width: currentButtonWidth,
+            width: overlayButtonWidth,
             height: theme.buttonHeight,
             decoration: BoxDecoration(
               color: theme.surface,
@@ -526,21 +674,23 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
               ),
             ),
             child: ModeToggleButton(
-              state: _navModeToToggleState(mode),
+              state: _navModeToToggleState(buttonMode),
               expandedWidth: theme.buttonWidth,
               collapsedWidth: theme.railWidth,
               splitRatio: 0.5,
               icon: widget.header?.logo,
               label: widget.header?.title,
               showModeIcon: widget.header == null,
-              onTap: mode != NavMode.sidebar && controller.canToggle
+              onTap: buttonMode != NavMode.sidebar && controller.canToggle
                   ? onLeftPressed
-                  : null,
+                  : isOverlay
+                      ? _dismissOverlay
+                      : null,
               onLeftTap: controller.canToggle ? onLeftPressed : null,
               onRightTap: controller.canToggle ? onRightPressed : null,
               accentColor: theme.accent,
               textColor: theme.textDim,
-              enabled: controller.canToggle,
+              enabled: controller.canToggle || isOverlay,
               animationDuration: theme.railDuration,
             ),
           ),
