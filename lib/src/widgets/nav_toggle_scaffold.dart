@@ -400,9 +400,16 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
       theme: _theme,
       child: ChangeNotifierProvider.value(
         value: _controller,
-        child: Container(
-          color: _theme.background,
-          child: inner,
+        child: DefaultTextStyle(
+          style: TextStyle(
+            decoration: TextDecoration.none,
+            color: _theme.text,
+            fontSize: 14,
+          ),
+          child: Container(
+            color: _theme.background,
+            child: inner,
+          ),
         ),
       ),
     );
