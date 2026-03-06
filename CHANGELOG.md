@@ -1,3 +1,7 @@
+## 1.2.2
+
+- Fix yellow double-underlined text by wrapping widgets with `DefaultTextStyle` to override the default inherited style
+
 ## 1.2.1
 
 - Fix infinite widget tree loop when `autoResponsive` is enabled — `LayoutBuilder` was returning itself instead of its child content
