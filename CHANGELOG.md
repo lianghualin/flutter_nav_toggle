@@ -1,3 +1,7 @@
+## 1.2.1
+
+- Fix infinite widget tree loop when `autoResponsive` is enabled — `LayoutBuilder` was returning itself instead of its child content
+
 ## 1.2.0
 
 - Add auto-responsive mode with configurable breakpoints (`autoResponsive`, `breakpointSidebar`, `breakpointRail` on `NavToggleTheme`)

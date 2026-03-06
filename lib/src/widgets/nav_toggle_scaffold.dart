@@ -385,12 +385,13 @@ class _NavToggleScaffoldState extends State<NavToggleScaffold>
 
     // Wrap in LayoutBuilder for auto-responsive mode
     if (_theme.autoResponsive) {
+      final content = inner;
       inner = LayoutBuilder(
         builder: (context, constraints) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _handleAutoResponsive(constraints.maxWidth);
           });
-          return inner;
+          return content;
         },
       );
     }
