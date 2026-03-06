@@ -11,5 +11,8 @@ dependencies:
   flutter_nav_toggle:
     path: ..
 
+dev_dependencies:
+  lints: ^5.1.1
+
 flutter:
   uses-material-design: true

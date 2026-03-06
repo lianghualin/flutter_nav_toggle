@@ -1,3 +1,8 @@
+## 1.2.3
+
+- Fix CJK text rendering artifacts — `navFontFamily` and `monoFontFamily` now default to `null` (system font) instead of Latin-only `'Syne'`/`'DMMono'`
+- Remove boilerplate example test and fix example analysis configuration
+
 ## 1.2.2
 
 - Fix yellow double-underlined text by wrapping widgets with `DefaultTextStyle` to override the default inherited style

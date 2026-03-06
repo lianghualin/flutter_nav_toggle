@@ -362,12 +362,12 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
             children: [
               _InfoRow(
                   label: 'Navigation',
-                  value: theme.navFontFamily,
+                  value: theme.navFontFamily ?? 'System',
                   theme: theme),
               const SizedBox(height: 8),
               _InfoRow(
                   label: 'Monospace',
-                  value: theme.monoFontFamily,
+                  value: theme.monoFontFamily ?? 'System',
                   theme: theme),
             ],
           ),

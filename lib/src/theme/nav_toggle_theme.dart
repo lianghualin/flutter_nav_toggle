@@ -23,8 +23,8 @@ class NavToggleTheme {
     this.contentShiftDuration = const Duration(milliseconds: 480),
     this.railDuration = const Duration(milliseconds: 300),
     this.easeCurve = const Cubic(0.77, 0, 0.18, 1),
-    this.navFontFamily = 'Syne',
-    this.monoFontFamily = 'DMMono',
+    this.navFontFamily,
+    this.monoFontFamily,
     this.badgeColor = const Color(0xFFEF4444),
     this.badgeTextColor = const Color(0xFFFFFFFF),
     this.badgeSize = 18.0,
@@ -58,8 +58,8 @@ class NavToggleTheme {
     this.contentShiftDuration = const Duration(milliseconds: 480),
     this.railDuration = const Duration(milliseconds: 300),
     this.easeCurve = const Cubic(0.77, 0, 0.18, 1),
-    this.navFontFamily = 'Syne',
-    this.monoFontFamily = 'DMMono',
+    this.navFontFamily,
+    this.monoFontFamily,
     this.badgeColor = const Color(0xFFEF4444),
     this.badgeTextColor = const Color(0xFFFFFFFF),
     this.badgeSize = 18.0,
@@ -93,8 +93,8 @@ class NavToggleTheme {
     this.contentShiftDuration = const Duration(milliseconds: 480),
     this.railDuration = const Duration(milliseconds: 300),
     this.easeCurve = const Cubic(0.77, 0, 0.18, 1),
-    this.navFontFamily = 'Syne',
-    this.monoFontFamily = 'DMMono',
+    this.navFontFamily,
+    this.monoFontFamily,
     this.badgeColor = const Color(0xFFEF4444),
     this.badgeTextColor = const Color(0xFFFFFFFF),
     this.badgeSize = 18.0,
@@ -128,8 +128,8 @@ class NavToggleTheme {
     this.contentShiftDuration = const Duration(milliseconds: 480),
     this.railDuration = const Duration(milliseconds: 300),
     this.easeCurve = const Cubic(0.77, 0, 0.18, 1),
-    this.navFontFamily = 'Syne',
-    this.monoFontFamily = 'DMMono',
+    this.navFontFamily,
+    this.monoFontFamily,
     this.badgeColor = const Color(0xFFEF4444),
     this.badgeTextColor = const Color(0xFFFFFFFF),
     this.badgeSize = 18.0,
@@ -161,8 +161,8 @@ class NavToggleTheme {
   final Duration contentShiftDuration;
   final Duration railDuration;
   final Cubic easeCurve;
-  final String navFontFamily;
-  final String monoFontFamily;
+  final String? navFontFamily;
+  final String? monoFontFamily;
   final Color badgeColor;
   final Color badgeTextColor;
   final double badgeSize;
