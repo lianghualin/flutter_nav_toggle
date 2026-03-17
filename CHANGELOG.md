@@ -1,3 +1,12 @@
+## 1.2.4
+
+- Polish status panel: replace emoji icons with custom-painted SVG-style icons (checkmark, warning triangle, clock) across sidebar, rail, and tab bar modes
+- Add `date` field to `SystemStatus` for locale-aware date display
+- Warning row now shows rounded-square icon with severity-colored badge and hover state
+- Time row shows clock icon with time and date subtitle in sidebar, compact time in rail, `time · date` format in tab bar
+- Derive all status icon colors from theme tokens (`theme.accent`, alpha-blended backgrounds) for proper dark/ocean/sunset theme support
+- Add locale-aware date formatting to example app via `intl` package
+
 ## 1.2.3
 
 - Fix CJK text rendering artifacts — `navFontFamily` and `monoFontFamily` now default to `null` (system font) instead of Latin-only `'Syne'`/`'DMMono'`

@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_nav_toggle/flutter_nav_toggle.dart';
+import 'package:intl/intl.dart';
 
 void main() => runApp(const PlaygroundApp());
 
@@ -15,6 +17,20 @@ class PlaygroundApp extends StatelessWidget {
       title: 'NavToggle Playground',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.light(useMaterial3: true),
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('zh'),
+        Locale('ja'),
+        Locale('ko'),
+        Locale('fr'),
+        Locale('de'),
+        Locale('es'),
+      ],
       home: const PlaygroundPage(),
     );
   }
@@ -210,6 +226,12 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         '${now.second.toString().padLeft(2, '0')}';
   }
 
+  String _formatDate(BuildContext context) {
+    final locale = Localizations.localeOf(context).toString();
+    final now = DateTime.now();
+    return DateFormat.MMMEd(locale).format(now);
+  }
+
   void _onItemSelected(String id) {
     setState(() {
       _selectedId = id;
@@ -258,6 +280,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
           disk: _disk,
           warnings: _warnings,
           time: _formatTime(),
+          date: _formatDate(context),
           onWarningTap: () => _onItemSelected('data_status'),
         ),
         userInfo: _showUser

@@ -54,6 +54,11 @@ class StatusPanel extends StatelessWidget {
             theme: theme,
           ),
           const SizedBox(height: 10),
+          Container(
+            height: 1,
+            color: theme.border,
+          ),
+          const SizedBox(height: 10),
           _WarningRow(
             count: status.warnings,
             onTap: status.onWarningTap,
@@ -61,7 +66,11 @@ class StatusPanel extends StatelessWidget {
           ),
           if (status.time != null) ...[
             const SizedBox(height: 8),
-            _TimeRow(time: status.time!, theme: theme),
+            _TimeRow(
+              time: status.time!,
+              date: status.date,
+              theme: theme,
+            ),
           ],
           if (status.userName != null) ...[
             const SizedBox(height: 8),
@@ -177,35 +186,98 @@ class _WarningRow extends StatefulWidget {
 }
 
 class _WarningRowState extends State<_WarningRow> {
+  static const _amber = Color(0xFFF59E0B);
+  static const _red = Color(0xFFEF4444);
+
   bool _hovering = false;
 
   @override
   Widget build(BuildContext context) {
+    final theme = widget.theme;
     final hasWarnings = widget.count > 0;
-    final color = hasWarnings ? const Color(0xFFF59E0B) : widget.theme.textDim;
+    final isCritical = widget.count >= 10;
 
-    Widget row = Row(
-      children: [
-        Text(
-          '\u26A0',
-          style: TextStyle(fontSize: 12, color: color),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            '${widget.count} warning${widget.count == 1 ? '' : 's'}',
-            style: TextStyle(
-              fontFamily: widget.theme.navFontFamily,
-              fontWeight: FontWeight.w600,
-              fontSize: 12,
-              color: color,
-              decoration:
-                  _hovering && widget.onTap != null ? TextDecoration.underline : null,
-              decorationColor: color,
+    // Use theme.accent for healthy, semantic amber/red for warnings
+    final Color statusColor;
+    if (!hasWarnings) {
+      statusColor = theme.accent;
+    } else if (isCritical) {
+      statusColor = _red;
+    } else {
+      statusColor = _amber;
+    }
+
+    final iconBg = statusColor.withValues(alpha: 0.12);
+    final hoverBg = statusColor.withValues(alpha: 0.08);
+    final textColor = hasWarnings ? statusColor : theme.text;
+    final badgeBgColor = hasWarnings
+        ? statusColor
+        : statusColor.withValues(alpha: 0.12);
+    final badgeTextColor = hasWarnings
+        ? const Color(0xFFFFFFFF)
+        : statusColor;
+
+    final label = hasWarnings
+        ? '${widget.count} warning${widget.count == 1 ? '' : 's'}'
+        : 'All clear';
+
+    Widget row = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: _hovering ? hoverBg : null,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: _hovering
+                  ? statusColor.withValues(alpha: 0.18)
+                  : iconBg,
+              borderRadius: BorderRadius.circular(7),
+            ),
+            child: Center(
+              child: hasWarnings
+                  ? _WarningTriangleIcon(color: statusColor)
+                  : _CheckIcon(color: statusColor),
             ),
           ),
-        ),
-      ],
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontFamily: theme.navFontFamily,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+                color: textColor,
+                decoration: _hovering && widget.onTap != null
+                    ? TextDecoration.underline
+                    : null,
+                decorationColor: statusColor,
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+            decoration: BoxDecoration(
+              color: badgeBgColor,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              '${widget.count}',
+              style: TextStyle(
+                fontFamily: theme.monoFontFamily,
+                fontWeight: FontWeight.w700,
+                fontSize: 10,
+                color: badgeTextColor,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
 
     if (widget.onTap != null) {
@@ -224,33 +296,200 @@ class _WarningRowState extends State<_WarningRow> {
   }
 }
 
+class _CheckIcon extends StatelessWidget {
+  const _CheckIcon({required this.color});
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: const Size(12, 12),
+      painter: _CheckIconPainter(color: color),
+    );
+  }
+}
+
+class _CheckIconPainter extends CustomPainter {
+  const _CheckIconPainter({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    // Circle
+    canvas.drawCircle(
+      Offset(size.width / 2, size.height / 2),
+      size.width / 2 - 0.5,
+      paint,
+    );
+
+    // Checkmark
+    final path = Path()
+      ..moveTo(size.width * 0.28, size.height * 0.50)
+      ..lineTo(size.width * 0.45, size.height * 0.67)
+      ..lineTo(size.width * 0.75, size.height * 0.33);
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_CheckIconPainter oldDelegate) =>
+      color != oldDelegate.color;
+}
+
+class _WarningTriangleIcon extends StatelessWidget {
+  const _WarningTriangleIcon({required this.color});
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: const Size(12, 12),
+      painter: _WarningTrianglePainter(color: color),
+    );
+  }
+}
+
+class _WarningTrianglePainter extends CustomPainter {
+  const _WarningTrianglePainter({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.8
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    // Triangle
+    final path = Path()
+      ..moveTo(size.width * 0.5, size.height * 0.08)
+      ..lineTo(size.width * 0.95, size.height * 0.88)
+      ..lineTo(size.width * 0.05, size.height * 0.88)
+      ..close();
+    canvas.drawPath(path, paint);
+
+    // Exclamation line
+    canvas.drawLine(
+      Offset(size.width * 0.5, size.height * 0.38),
+      Offset(size.width * 0.5, size.height * 0.58),
+      paint,
+    );
+
+    // Exclamation dot
+    canvas.drawCircle(
+      Offset(size.width * 0.5, size.height * 0.72),
+      1.0,
+      paint..style = PaintingStyle.fill,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_WarningTrianglePainter oldDelegate) =>
+      color != oldDelegate.color;
+}
+
 class _TimeRow extends StatelessWidget {
-  const _TimeRow({required this.time, required this.theme});
+  const _TimeRow({required this.time, this.date, required this.theme});
 
   final String time;
+  final String? date;
   final NavToggleTheme theme;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Text(
-          '\u{1F551}',
-          style: TextStyle(fontSize: 12, color: theme.textDim),
-        ),
-        const SizedBox(width: 6),
-        Text(
-          time,
-          style: TextStyle(
-            fontFamily: theme.monoFontFamily,
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
-            color: theme.text,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        children: [
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: theme.textDim.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(7),
+            ),
+            child: Center(
+              child: CustomPaint(
+                size: const Size(12, 12),
+                painter: _ClockIconPainter(color: theme.textDim),
+              ),
+            ),
           ),
-        ),
-      ],
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  time,
+                  style: TextStyle(
+                    fontFamily: theme.monoFontFamily,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                    color: theme.text,
+                    height: 1.2,
+                  ),
+                ),
+                if (date != null)
+                  Text(
+                    date!,
+                    style: TextStyle(
+                      fontFamily: theme.navFontFamily,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 11,
+                      color: theme.textDim,
+                      height: 1.3,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
+}
+
+class _ClockIconPainter extends CustomPainter {
+  const _ClockIconPainter({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+
+    // Circle outline
+    final circlePaint = Paint()
+      ..color = color
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+    canvas.drawCircle(Offset(cx, cy), cx - 0.8, circlePaint);
+
+    // Clock hands
+    final handPaint = Paint()
+      ..color = color
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round;
+
+    // Minute hand pointing to 12 (up)
+    canvas.drawLine(Offset(cx, cy), Offset(cx, cy - cx * 0.6), handPaint);
+    // Hour hand pointing to 3 (right)
+    canvas.drawLine(Offset(cx, cy), Offset(cx + cx * 0.45, cy + cx * 0.15), handPaint);
+  }
+
+  @override
+  bool shouldRepaint(_ClockIconPainter oldDelegate) =>
+      color != oldDelegate.color;
 }
 
 class _UserNameRow extends StatelessWidget {

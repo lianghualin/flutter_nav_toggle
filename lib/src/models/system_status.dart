@@ -10,6 +10,7 @@ class SystemStatus {
     this.disk = 0.0,
     this.warnings = 0,
     this.time,
+    this.date,
     this.userName,
     this.onWarningTap,
   });
@@ -29,6 +30,9 @@ class SystemStatus {
   /// Optional time string to display (e.g. '14:32:05').
   final String? time;
 
+  /// Optional date string to display (e.g. 'Mon, Mar 17').
+  final String? date;
+
   /// Optional user name displayed in the status panel.
   final String? userName;
 
@@ -42,6 +46,7 @@ class SystemStatus {
     double? disk,
     int? warnings,
     String? time,
+    String? date,
     String? userName,
     VoidCallback? onWarningTap,
   }) {
@@ -51,6 +56,7 @@ class SystemStatus {
       disk: disk ?? this.disk,
       warnings: warnings ?? this.warnings,
       time: time ?? this.time,
+      date: date ?? this.date,
       userName: userName ?? this.userName,
       onWarningTap: onWarningTap ?? this.onWarningTap,
     );

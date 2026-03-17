@@ -558,10 +558,18 @@ class _StatusChips extends StatelessWidget {
         _Chip(label: 'D', value: '${(status.disk * 100).round()}%', color: _chipColor(status.disk), theme: theme),
         const SizedBox(width: 4),
         _WarningChip(count: status.warnings, theme: theme),
-        if (status.time != null) ...[
-          const SizedBox(width: 4),
-          _TimeChip(time: status.time!, theme: theme),
-        ],
+        const SizedBox(width: 6),
+        Container(
+          width: 1,
+          height: 14,
+          color: theme.border,
+        ),
+        const SizedBox(width: 6),
+        _TimeChip(
+          time: status.time,
+          date: status.date,
+          theme: theme,
+        ),
         const SizedBox(width: 8),
       ],
     );
@@ -620,35 +628,49 @@ class _Chip extends StatelessWidget {
 class _WarningChip extends StatelessWidget {
   const _WarningChip({required this.count, required this.theme});
 
+  static const _amber = Color(0xFFF59E0B);
+  static const _red = Color(0xFFEF4444);
+
   final int count;
   final NavToggleTheme theme;
 
   @override
   Widget build(BuildContext context) {
     final hasWarnings = count > 0;
-    final color = hasWarnings ? const Color(0xFFF59E0B) : theme.textDim;
+    final isCritical = count >= 10;
+
+    final Color statusColor;
+    if (!hasWarnings) {
+      statusColor = theme.accent;
+    } else if (isCritical) {
+      statusColor = _red;
+    } else {
+      statusColor = _amber;
+    }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: statusColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            '\u26A0',
-            style: TextStyle(fontSize: 9, color: color),
+          CustomPaint(
+            size: const Size(10, 10),
+            painter: hasWarnings
+                ? _TabWarningTrianglePainter(color: statusColor)
+                : _TabCheckPainter(color: statusColor),
           ),
-          const SizedBox(width: 2),
+          const SizedBox(width: 4),
           Text(
             '$count',
             style: TextStyle(
               fontFamily: theme.monoFontFamily,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
               fontSize: 10,
-              color: color,
+              color: hasWarnings ? statusColor : theme.text,
             ),
           ),
         ],
@@ -657,28 +679,100 @@ class _WarningChip extends StatelessWidget {
   }
 }
 
-class _TimeChip extends StatelessWidget {
-  const _TimeChip({required this.time, required this.theme});
+class _TabCheckPainter extends CustomPainter {
+  const _TabCheckPainter({required this.color});
+  final Color color;
 
-  final String time;
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    canvas.drawCircle(
+      Offset(size.width / 2, size.height / 2),
+      size.width / 2 - 0.5,
+      paint,
+    );
+
+    final path = Path()
+      ..moveTo(size.width * 0.28, size.height * 0.50)
+      ..lineTo(size.width * 0.45, size.height * 0.67)
+      ..lineTo(size.width * 0.75, size.height * 0.33);
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_TabCheckPainter oldDelegate) =>
+      color != oldDelegate.color;
+}
+
+class _TabWarningTrianglePainter extends CustomPainter {
+  const _TabWarningTrianglePainter({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final path = Path()
+      ..moveTo(size.width * 0.5, size.height * 0.08)
+      ..lineTo(size.width * 0.95, size.height * 0.88)
+      ..lineTo(size.width * 0.05, size.height * 0.88)
+      ..close();
+    canvas.drawPath(path, paint);
+
+    canvas.drawLine(
+      Offset(size.width * 0.5, size.height * 0.38),
+      Offset(size.width * 0.5, size.height * 0.55),
+      paint,
+    );
+
+    canvas.drawCircle(
+      Offset(size.width * 0.5, size.height * 0.70),
+      0.8,
+      paint..style = PaintingStyle.fill,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_TabWarningTrianglePainter oldDelegate) =>
+      color != oldDelegate.color;
+}
+
+class _TimeChip extends StatelessWidget {
+  const _TimeChip({this.time, this.date, required this.theme});
+
+  final String? time;
+  final String? date;
   final NavToggleTheme theme;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-      decoration: BoxDecoration(
-        color: theme.textDim.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        time,
-        style: TextStyle(
-          fontFamily: theme.monoFontFamily,
-          fontWeight: FontWeight.w600,
-          fontSize: 10,
-          color: theme.text,
-        ),
+    final timeStr = time != null && time!.length >= 5
+        ? time!.substring(0, 5)
+        : time;
+    final parts = <String>[
+      ?timeStr,
+      ?date,
+    ];
+    if (parts.isEmpty) return const SizedBox.shrink();
+
+    return Text(
+      parts.join(' \u00B7 '),
+      style: TextStyle(
+        fontFamily: theme.monoFontFamily,
+        fontWeight: FontWeight.w600,
+        fontSize: 11,
+        color: theme.text,
       ),
     );
   }

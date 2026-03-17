@@ -524,7 +524,6 @@ class _RailStatusCircles extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = NavToggleTheme.of(context);
-    final hasWarnings = status.warnings > 0;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -556,20 +555,29 @@ class _RailStatusCircles extends StatelessWidget {
             color: _thresholdColor(status.disk),
             theme: theme,
           ),
-          const SizedBox(height: 6),
-          _StatusCircle(
-            label: '${status.warnings} warning${status.warnings == 1 ? '' : 's'}',
-            text: '\u26A0${status.warnings}',
-            color: hasWarnings ? _amber : theme.textDim,
+          const SizedBox(height: 8),
+          Container(
+            width: 16,
+            height: 1,
+            color: theme.border,
+          ),
+          const SizedBox(height: 8),
+          _RailWarningIcon(
+            count: status.warnings,
             theme: theme,
           ),
           if (status.time != null) ...[
-            const SizedBox(height: 6),
-            _StatusCircle(
-              label: status.time!,
-              text: '\u{1F551}',
-              color: theme.textDim,
-              theme: theme,
+            const SizedBox(height: 4),
+            Text(
+              status.time!.length >= 5
+                  ? status.time!.substring(0, 5)
+                  : status.time!,
+              style: TextStyle(
+                fontFamily: theme.monoFontFamily,
+                fontWeight: FontWeight.w700,
+                fontSize: 10,
+                color: theme.text,
+              ),
             ),
           ],
         ],
@@ -685,6 +693,222 @@ class _StatusCircleState extends State<_StatusCircle> {
       ),
     );
   }
+}
+
+/// Rounded-square warning/check icon for the rail with optional count badge.
+class _RailWarningIcon extends StatefulWidget {
+  const _RailWarningIcon({required this.count, required this.theme});
+
+  final int count;
+  final NavToggleTheme theme;
+
+  @override
+  State<_RailWarningIcon> createState() => _RailWarningIconState();
+}
+
+class _RailWarningIconState extends State<_RailWarningIcon> {
+  static const _amber = Color(0xFFF59E0B);
+  static const _red = Color(0xFFEF4444);
+
+  OverlayEntry? _tooltipEntry;
+  final LayerLink _tooltipLink = LayerLink();
+
+  @override
+  void dispose() {
+    _hideTooltip();
+    super.dispose();
+  }
+
+  void _showTooltip() {
+    if (_tooltipEntry != null) return;
+    final theme = widget.theme;
+    final hasWarnings = widget.count > 0;
+    final label = hasWarnings
+        ? '${widget.count} warning${widget.count == 1 ? '' : 's'}'
+        : 'All clear';
+    _tooltipEntry = OverlayEntry(
+      builder: (_) => CompositedTransformFollower(
+        link: _tooltipLink,
+        targetAnchor: Alignment.centerRight,
+        followerAnchor: Alignment.centerLeft,
+        offset: const Offset(8, 0),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: theme.surface,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: theme.border, width: 1),
+            ),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontFamily: theme.navFontFamily,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+                color: theme.text,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    Overlay.of(context).insert(_tooltipEntry!);
+  }
+
+  void _hideTooltip() {
+    _tooltipEntry?.remove();
+    _tooltipEntry = null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = widget.theme;
+    final hasWarnings = widget.count > 0;
+    final isCritical = widget.count >= 10;
+
+    final Color statusColor;
+    if (!hasWarnings) {
+      statusColor = theme.accent;
+    } else if (isCritical) {
+      statusColor = _red;
+    } else {
+      statusColor = _amber;
+    }
+
+    return CompositedTransformTarget(
+      link: _tooltipLink,
+      child: MouseRegion(
+        onEnter: (_) => _showTooltip(),
+        onExit: (_) => _hideTooltip(),
+        child: SizedBox(
+          width: 28,
+          height: 28,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(7),
+                ),
+                child: Center(
+                  child: hasWarnings
+                      ? CustomPaint(
+                          size: const Size(13, 13),
+                          painter: _RailWarningTrianglePainter(color: statusColor),
+                        )
+                      : CustomPaint(
+                          size: const Size(13, 13),
+                          painter: _RailCheckPainter(color: statusColor),
+                        ),
+                ),
+              ),
+              if (hasWarnings)
+                Positioned(
+                  top: -3,
+                  right: -3,
+                  child: Container(
+                    width: 14,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: statusColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: theme.surface,
+                        width: 2,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${widget.count}',
+                        style: const TextStyle(
+                          fontSize: 7,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFFFFFFFF),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RailCheckPainter extends CustomPainter {
+  const _RailCheckPainter({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 2.2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    canvas.drawCircle(
+      Offset(size.width / 2, size.height / 2),
+      size.width / 2 - 0.5,
+      paint,
+    );
+
+    final path = Path()
+      ..moveTo(size.width * 0.28, size.height * 0.50)
+      ..lineTo(size.width * 0.45, size.height * 0.67)
+      ..lineTo(size.width * 0.75, size.height * 0.33);
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_RailCheckPainter oldDelegate) =>
+      color != oldDelegate.color;
+}
+
+class _RailWarningTrianglePainter extends CustomPainter {
+  const _RailWarningTrianglePainter({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.8
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final path = Path()
+      ..moveTo(size.width * 0.5, size.height * 0.08)
+      ..lineTo(size.width * 0.95, size.height * 0.88)
+      ..lineTo(size.width * 0.05, size.height * 0.88)
+      ..close();
+    canvas.drawPath(path, paint);
+
+    canvas.drawLine(
+      Offset(size.width * 0.5, size.height * 0.38),
+      Offset(size.width * 0.5, size.height * 0.58),
+      paint,
+    );
+
+    canvas.drawCircle(
+      Offset(size.width * 0.5, size.height * 0.72),
+      1.0,
+      paint..style = PaintingStyle.fill,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_RailWarningTrianglePainter oldDelegate) =>
+      color != oldDelegate.color;
 }
 
 /// Compact user avatar for the icon rail — 28x28 circle with initials.
